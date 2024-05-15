@@ -55,6 +55,10 @@ class GUIServerController(ControllerBase):
         super(GUIServerController, self).__init__(req, link, data, **config)
         path = "%s/html/" % PATH
         self.static_app = DirectoryApp(path)
+        
+    @route('images', '/images/*filename')
+    def images_handler(self, req, **kwargs):
+        return self.static_app(req)
 
     @route('topology', '/{filename:[^/]*}')
     def static_handler(self, req, **kwargs):

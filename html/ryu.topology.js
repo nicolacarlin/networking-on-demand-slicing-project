@@ -63,10 +63,10 @@ function _dragstart(d) {
         flows = data[dpid];
         console.log(flows);
         elem.console.selectAll("ul").remove();
-        li = elem.console.append("ul")
+        /*li = elem.console.append("ul")
             .selectAll("li");
         li.data(flows).enter().append("li")
-            .text(function (d) { return JSON.stringify(d, null, " "); });
+            .text(function (d) { return JSON.stringify(d, null, " "); });*/
     });
     d3.select(this).classed("fixed", d.fixed = true);
 }
@@ -90,8 +90,14 @@ elem.update = function () {
         .attr("class", "node")
         .on("dblclick", function(d) { d3.select(this).classed("fixed", d.fixed = false); })
         .call(this.drag);
-    nodeEnter.append("image")
-        .attr("xlink:href", "./router.svg")
+    nodeEnter.filter(function(d){console.log("DDD:", d); return d.dpid.startsWith("h");}).append("image")
+        .attr("xlink:href", "./images/host.svg")
+        .attr("x", -CONF.image.width/2)
+        .attr("y", -CONF.image.height/2)
+        .attr("width", CONF.image.width)
+        .attr("height", CONF.image.height);
+    nodeEnter.filter(function(d){console.log("DDD:", d); return !d.dpid.startsWith("h");}).append("image")
+        .attr("xlink:href", "./images/switch.svg")
         .attr("x", -CONF.image.width/2)
         .attr("y", -CONF.image.height/2)
         .attr("width", CONF.image.width)
@@ -100,7 +106,7 @@ elem.update = function () {
         .attr("dx", -CONF.image.width/2)
         .attr("dy", CONF.image.height-10)
         .text(function(d) { return "dpid: " + trim_zero(d.dpid); });
-
+        
     var ports = topo.get_ports();
     this.port.remove();
     this.port = this.svg.selectAll(".port").data(ports);
@@ -124,7 +130,9 @@ var topo = {
     node_index: {}, // dpid -> index of nodes array
     initialize: function (data) {
         this.add_nodes(data.switches);
+        this.add_nodes(data.hosts);
         this.add_links(data.links);
+        this.add_links(data.hosts_links);
     },
     add_nodes: function (nodes) {
         for (var i = 0; i < nodes.length; i++) {
@@ -134,7 +142,7 @@ var topo = {
     },
     add_links: function (links) {
         for (var i = 0; i < links.length; i++) {
-            if (!is_valid_link(links[i])) continue;
+            //if (!is_valid_link(links[i])) continue;
             console.log("add link: " + JSON.stringify(links[i]));
 
             var src_dpid = links[i].src.dpid;
@@ -267,9 +275,17 @@ var rpc = {
 
 function initialize_topology() {
     d3.json("/v1.0/topology/switches", function(error, switches) {
-        d3.json("/v1.0/topology/links", function(error, links) {
-            topo.initialize({switches: switches, links: links});
-            elem.update();
+        d3.json("/v1.0/topology/hosts", function(error, hosts) {
+            d3.json("/v1.0/topology/links", function(error, links) {
+                hosts_links=[]
+                for(var i = 0; i < hosts.length;i++){
+                    link={src:{dpid:"h"+i,hw_addr:hosts[i].mac,name:"h"+i+"-s"+i,port_no:"00000001"},dst:{dpid:switches[i].dpid,hw_addr:switches[i].ports[0].hw_addr,name:switches[i].ports[0].name,port_no:switches[i].ports[0].port_no}}
+                    hosts_links.push(link);
+                    hosts[i].dpid="h"+i;
+                }
+                topo.initialize({switches: switches, links: links, hosts:hosts, hosts_links:hosts_links});
+                elem.update();
+            });
         });
     });
 }
