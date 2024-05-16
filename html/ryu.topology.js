@@ -61,7 +61,7 @@ function _dragstart(d) {
     var dpid = dpid_to_int(d.dpid)
     d3.json("/stats/flow/" + dpid, function(e, data) {
         flows = data[dpid];
-        console.log(flows);
+        // console.log(flows);
         elem.console.selectAll("ul").remove();
         /*li = elem.console.append("ul")
             .selectAll("li");
@@ -90,13 +90,13 @@ elem.update = function () {
         .attr("class", "node")
         .on("dblclick", function(d) { d3.select(this).classed("fixed", d.fixed = false); })
         .call(this.drag);
-    nodeEnter.filter(function(d){console.log("DDD:", d); return d.dpid.startsWith("h");}).append("image")
+    nodeEnter.filter(function(d){return d.dpid.startsWith("h");}).append("image")
         .attr("xlink:href", "./images/host.svg")
         .attr("x", -CONF.image.width/2)
         .attr("y", -CONF.image.height/2)
         .attr("width", CONF.image.width)
         .attr("height", CONF.image.height);
-    nodeEnter.filter(function(d){console.log("DDD:", d); return !d.dpid.startsWith("h");}).append("image")
+    nodeEnter.filter(function(d){return !d.dpid.startsWith("h");}).append("image")
         .attr("xlink:href", "./images/switch.svg")
         .attr("x", -CONF.image.width/2)
         .attr("y", -CONF.image.height/2)
@@ -278,10 +278,15 @@ function initialize_topology() {
         d3.json("/v1.0/topology/hosts", function(error, hosts) {
             d3.json("/v1.0/topology/links", function(error, links) {
                 hosts_links=[]
+                
+                //Sort hosts and switches to replicate connection
+                hosts.sort((a,b) => a.mac > b.mac);
+                switches.sort((a,b) => a.dpid > b.dpid);
+               
                 for(var i = 0; i < hosts.length;i++){
-                    link={src:{dpid:"h"+i,hw_addr:hosts[i].mac,name:"h"+i+"-s"+i,port_no:"00000001"},dst:{dpid:switches[i].dpid,hw_addr:switches[i].ports[0].hw_addr,name:switches[i].ports[0].name,port_no:switches[i].ports[0].port_no}}
+                    link={src:{dpid:"h"+(i+1),hw_addr:hosts[i].mac,name:"h"+(i+1)+"-s"+(i+1),port_no:"00000001"},dst:{dpid:switches[i].dpid,hw_addr:switches[i].ports[0].hw_addr,name:switches[i].ports[0].name,port_no:switches[i].ports[0].port_no}}
                     hosts_links.push(link);
-                    hosts[i].dpid="h"+i;
+                    hosts[i].dpid="h"+(i+1);
                 }
                 topo.initialize({switches: switches, links: links, hosts:hosts, hosts_links:hosts_links});
                 elem.update();
