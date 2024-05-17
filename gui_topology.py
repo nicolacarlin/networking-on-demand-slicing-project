@@ -65,8 +65,8 @@ class GUIServerController(ControllerBase):
         if kwargs['filename']:
             req.path_info = kwargs['filename']
         return self.static_app(req)
-        
-app_manager.require_app('ryu.app.rest_topology')
-app_manager.require_app('./controller.py')
-app_manager.require_app('ryu.app.ws_topology')
+                
+app_manager.require_app('./controller.py')        
 app_manager.require_app('ryu.app.ofctl_rest')
+#app_manager.require_app('ryu.app.rest_topology')
+#app_manager.require_app('ryu.app.ws_topology')
