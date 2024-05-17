@@ -31,8 +31,9 @@ class NetworkPhysicalTopo(Topo):
             hosts.append(self.addHost("h%d" % (i), **host_config))
 
         # Add switch links
-        for i in range(0, len(switches)-1):
-              self.addLink(switches[i], switches[i+1], **switch_link_config)       
+        for i in range(0, len(switches)):
+            for j in range(i+1, len(switches)):
+              self.addLink(switches[i], switches[j], **switch_link_config)       
 
         # Add host links
         for i in range(0, len(hosts)):
