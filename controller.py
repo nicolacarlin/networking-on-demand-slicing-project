@@ -1,45 +1,35 @@
-# Copyright (C) 2016 Nippon Telegraph and Telephone Corporation.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
-from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER
-from ryu.controller.handler import set_ev_cls
+import json
+import requests
+import time 
+from webob import Response
+from ryu.controller.handler import MAIN_DISPATCHER, set_ev_cls
 from ryu.ofproto import ofproto_v1_3
 from ryu.lib import dpid as dpid_lib
 from ryu.lib import stplib
-from ryu.lib.packet import packet
-from ryu.lib.packet import ethernet
-from ryu.app import simple_switch_13
+from ryu.lib.packet import packet, ethernet, ether_types
+
 from ryu.app.wsgi import ControllerBase, WSGIApplication, route
+from ryu.controller import dpset
+from ryu.app.simple_switch_13 import SimpleSwitch13
 
+switch_instance_name = 'switch_api_app'
 
-class Controller(simple_switch_13.SimpleSwitch13):
+class Controller(SimpleSwitch13):
+
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-    _CONTEXTS = {
-        'stplib': stplib.Stp,
-        'wsgi': WSGIApplication}
+
+    _CONTEXTS = {'stplib': stplib.Stp, 'wsgi': WSGIApplication, 'dpset': dpset.DPSet}
 
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
-        wsgi = kwargs['wsgi']
-        wsgi.register(TopologyController, {'topology_api_app': self})
-        self.mac_to_port = {}
-        self.stp = kwargs['stplib']
+        self.name = switch_instance_name
 
-        # Sample of stplib config.
-        #  please refer to stplib.Stp.set_config() for details.
+        self.dpset = kwargs['dpset']
+        self.stp = kwargs['stplib']
+        wsgi = kwargs['wsgi']
+
+        self.mac_to_port = {}
+
         config = {dpid_lib.str_to_dpid('0000000000000001'):
                   {'bridge': {'priority': 0x8000, 'fwd_delay': 8}},
                   dpid_lib.str_to_dpid('0000000000000002'):
@@ -52,9 +42,16 @@ class Controller(simple_switch_13.SimpleSwitch13):
                   {'bridge': {'priority': 0xc000, 'fwd_delay': 8}},
                   dpid_lib.str_to_dpid('0000000000000006'):
                   {'bridge': {'priority': 0xd000, 'fwd_delay': 8}}}
+
+
+        # Register the STP configuration
         self.stp.set_config(config)
 
+        # Register the REST API
+        wsgi.register(TopoController, {switch_instance_name: self})
+
     def delete_flow(self, datapath):
+
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
@@ -63,7 +60,7 @@ class Controller(simple_switch_13.SimpleSwitch13):
             mod = parser.OFPFlowMod(
                 datapath, command=ofproto.OFPFC_DELETE,
                 out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY,
-                priority=1, match=match)
+                priority=1, match=match, table_id=1)
             datapath.send_msg(mod)
 
     @set_ev_cls(stplib.EventPacketIn, MAIN_DISPATCHER)
@@ -80,32 +77,34 @@ class Controller(simple_switch_13.SimpleSwitch13):
         dst = eth.dst
         src = eth.src
 
+        # Ignore LLDP packets - they are used for topology discovery
+        if eth.ethertype == ether_types.ETH_TYPE_LLDP:
+            return
+
         dpid = datapath.id
         self.mac_to_port.setdefault(dpid, {})
 
-        #self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
-
-        # learn a mac address to avoid FLOOD next time.
+            
+        # Learn a mac address to avoid FLOOD next time.
         self.mac_to_port[dpid][src] = in_port
 
+        # If the destination is known, send the packet to the destination
         if dst in self.mac_to_port[dpid]:
             out_port = self.mac_to_port[dpid][dst]
         else:
+            # Flood the packet to all possible ports (based on the slice restrictions)
             out_port = ofproto.OFPP_FLOOD
 
+        # Create the actions list: send the packet to each port in out_port
+        # actions = [parser.OFPActionOutput(int(out)) for out in out_port]
         actions = [parser.OFPActionOutput(out_port)]
-
-        # install a flow to avoid packet_in next time
-        if out_port != ofproto.OFPP_FLOOD:
-            match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
-            self.add_flow(datapath, 1, match, actions)
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
             data = msg.data
 
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
-                                  in_port=in_port, actions=actions, data=data)
+                            in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
 
     @set_ev_cls(stplib.EventTopologyChange, MAIN_DISPATCHER)
@@ -129,64 +128,10 @@ class Controller(simple_switch_13.SimpleSwitch13):
                     stplib.PORT_STATE_FORWARD: 'FORWARD'}
         self.logger.debug("[dpid=%s][port=%d] state=%s",
                           dpid_str, ev.port_no, of_state[ev.port_state])
-                          
-class TopologyController(ControllerBase):
+    
+class TopoController(ControllerBase):
     def __init__(self, req, link, data, **config):
-        super(TopologyController, self).__init__(req, link, data, **config)
-        self.topology_api_app = data['topology_api_app']
+        """Initialize the controller"""
+        super(TopoController, self).__init__(req, link, data, **config)
+        self.switch_app = data[switch_instance_name]
 
-    @route('topology', '/v1.0/topology/switches',
-           methods=['GET'])
-    def list_switches(self, req, **kwargs):
-        return self._switches(req, **kwargs)
-
-    @route('topology', '/v1.0/topology/switches/{dpid}',
-           methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def get_switch(self, req, **kwargs):
-        return self._switches(req, **kwargs)
-
-    @route('topology', '/v1.0/topology/links',
-           methods=['GET'])
-    def list_links(self, req, **kwargs):
-        return self._links(req, **kwargs)
-
-    @route('topology', '/v1.0/topology/links/{dpid}',
-           methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def get_links(self, req, **kwargs):
-        return self._links(req, **kwargs)
-
-    @route('topology', '/v1.0/topology/hosts',
-           methods=['GET'])
-    def list_hosts(self, req, **kwargs):
-        return self._hosts(req, **kwargs)
-
-    @route('topology', '/v1.0/topology/hosts/{dpid}',
-          methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def get_hosts(self, req, **kwargs):
-       return self._hosts(req, **kwargs)
-
-
-    def _switches(self, req, **kwargs):
-        dpid = None
-        if 'dpid' in kwargs:
-            dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-        switches = get_switch(self.topology_api_app, dpid)
-        body = json.dumps([switch.to_dict() for switch in switches])
-        return Response(content_type='application/json', body=body)
-
-    def _links(self, req, **kwargs):
-        dpid = None
-        if 'dpid' in kwargs:
-            dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-        links = get_link(self.topology_api_app, dpid)
-        body = json.dumps([link.to_dict() for link in links])
-        return Response(content_type='application/json', body=body)
-
-    def _hosts(self, req, **kwargs):
-        dpid = None
-        if 'dpid' in kwargs:
-            dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-        hosts = get_host(self.topology_api_app, dpid)
-        body = json.dumps([host.to_dict() for host in hosts])
-        return Response(content_type='application/json', body=body)   
-        
