@@ -3,7 +3,7 @@
 
 from mininet.topo import Topo
 from mininet.net import Mininet
-from mininet.node import OVSKernelSwitch, RemoteController
+from mininet.node import OVSKernelSwitch, RemoteController, OVSSwitch
 from mininet.cli import CLI
 from mininet.link import TCLink
 
@@ -22,12 +22,12 @@ class NetworkPhysicalTopo(Topo):
         hosts = []
 
         # Create switch nodes
-        for i in range(1,7):
+        for i in range(1,4):
             sconfig = {"dpid": "%016x" % (i)}
             switches.append(self.addSwitch("s%d" % (i), **sconfig))
             
         # Create host nodes
-        for i in range(1,7):
+        for i in range(1,4):
             hosts.append(self.addHost("h%d" % (i), **host_config))
 
         # Add switch links
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     topo = NetworkPhysicalTopo()
     net = Mininet(
         topo=topo,
-        switch=OVSKernelSwitch,
+        switch=OVSSwitch,
         build=False,
         autoSetMacs=True,
         autoStaticArp=True,
