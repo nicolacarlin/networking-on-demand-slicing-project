@@ -38,7 +38,7 @@ class NetworkPhysicalTopo(Topo):
         # Add host links
         for i in range(0, len(hosts)):
             self.addLink(hosts[i], switches[i], **host_link_config)
-        
+       
 
 
 topos = {"networkphysicaltopo": (lambda: NetworkPhysicalTopo())}
@@ -56,6 +56,18 @@ if __name__ == "__main__":
     controller = RemoteController("c1", ip="127.0.0.1", port=6633)
     net.addController(controller)
     net.build()
+
+    #Disable IPv6
+    for h in net.hosts:
+        h.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
+        h.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
+        h.cmd("sysctl -w net.ipv6.conf.lo.disable_ipv6=1")
+
+    for s in net.switches:
+        s.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
+        s.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
+        s.cmd("sysctl -w net.ipv6.conf.lo.disable_ipv6=1")
+
     net.start()
 
     CLI(net)

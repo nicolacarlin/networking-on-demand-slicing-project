@@ -20,6 +20,7 @@ class Controller(SimpleSwitch13):
 
     _CONTEXTS = {'stplib': stplib.Stp, 'wsgi': WSGIApplication, 'dpset': dpset.DPSet}
 
+
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
         self.name = switch_instance_name
@@ -29,6 +30,25 @@ class Controller(SimpleSwitch13):
         wsgi = kwargs['wsgi']
 
         self.mac_to_port = {}
+
+        self.sliceConfigs = {"default": {
+            "1": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
+            "2": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
+            "3": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
+            "4": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
+            "5": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
+            "6": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]}
+        },
+            "test": {
+            "1": {"1": [6], "2":[], "6": [1]},
+            "2": {"1": [6], "6": [1]},
+            "3": {},
+            "4": {},
+            "5": {},
+            "6": {}
+        }}
+
+        self.sliceToPort = self.sliceConfigs["default"]
 
         config = {dpid_lib.str_to_dpid('0000000000000001'):
                   {'bridge': {'priority': 0x8000, 'fwd_delay': 8}},
@@ -84,28 +104,36 @@ class Controller(SimpleSwitch13):
         dpid = datapath.id
         self.mac_to_port.setdefault(dpid, {})
 
-            
-        # Learn a mac address to avoid FLOOD next time.
-        self.mac_to_port[dpid][src] = in_port
+        # Check if the communication is allowed
+        if str(in_port) in self.sliceToPort[str(dpid)]: 
+            # Learn a mac address to avoid FLOOD next time.
+            self.mac_to_port[dpid][src] = in_port
 
-        # If the destination is known, send the packet to the destination
-        if dst in self.mac_to_port[dpid]:
-            out_port = self.mac_to_port[dpid][dst]
-        else:
-            # Flood the packet to all possible ports (based on the slice restrictions)
-            out_port = ofproto.OFPP_FLOOD
+            #self.logger.info(f"DPID: {dpid}, SRC: {src}, DST: {dst}, IN_PORT: {in_port}, MAC_TO_PORT[dpid] {self.mac_to_port[dpid]}, self.mac_to_port[dpid][dst]:")
+            # If the destination is known, send the packet to the destination
+            if dst in self.mac_to_port[dpid] and self.mac_to_port[dpid][dst] in self.sliceToPort[str(dpid)][str(in_port)]:
+                out_port = [self.mac_to_port[dpid][dst]]
+            else:
+                # Flood the packet to all possible ports (based on the slice restrictions)
+                out_port = self.sliceToPort[str(dpid)][str(in_port)]
+                self.logger.info("Destination unknown: switch: %s, flooding on ports: %s", dpid, out_port)
 
-        # Create the actions list: send the packet to each port in out_port
-        # actions = [parser.OFPActionOutput(int(out)) for out in out_port]
-        actions = [parser.OFPActionOutput(out_port)]
+            # Create the actions list: send the packet to each port in out_port
+            actions = [parser.OFPActionOutput(int(out)) for out in out_port]
 
-        data = None
-        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
-            data = msg.data
+            data = None
+            if msg.buffer_id == ofproto.OFP_NO_BUFFER:
+                data = msg.data
 
-        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
-                            in_port=in_port, actions=actions, data=data)
-        datapath.send_msg(out)
+            out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
+                                in_port=in_port, actions=actions, data=data)
+            datapath.send_msg(out)
+        elif str(in_port) not in self.sliceToPort[str(dpid)]: 
+            # The slice doesn't allow this communication, no action is taken
+            self.logger.info("Input port not in the slice, switch %s, in_port: %s, slice_to_port %s", dpid, in_port, self.sliceToPort)
+        else: 
+            self.logger.info("Standard error")
+
 
     @set_ev_cls(stplib.EventTopologyChange, MAIN_DISPATCHER)
     def _topology_change_handler(self, ev):
