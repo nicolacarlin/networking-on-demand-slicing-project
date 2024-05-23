@@ -40,38 +40,30 @@ class Controller(SimpleSwitch13):
             "5": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
             "6": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]}
         },
-            "test1": {
+            "test1":{
             "1": {"1": [2,3], "2":[1,3], "3": [1,2]},
             "2": {"1": [3], "3": [1]},
             "3": {"1": [3], "3": [1]}
-        },
+        } ,
             "test2": {
             "1": {"1": [3], "3": [1]},
             "2": {"1": [2,3], "2":[1,3], "3": [1,2]},
             "3": {"2": [3], "3": [2]}
         }}
 
-        self.sliceToPort = self.sliceConfigs["test1"]
+        self.sliceToPort = self.sliceConfigs["default"]
 
-        self.config = {
+        config = {
                     dpid_lib.str_to_dpid('0000000000000001'): {
-                        'bridge': {
-                            'priority': 0x8000, 'fwd_delay': 8
-                            },
-                        'ports': {
-                            1: {'enable': False},
-                            2: {'enable': False}, 
-                            3: {'enable': False}
-                            }
-                        },                                 
-                  dpid_lib.str_to_dpid('0000000000000002'):
-                  {'bridge': {'priority': 0x8000, 'fwd_delay': 8}},
-                  dpid_lib.str_to_dpid('0000000000000003'):
-                  {'bridge': {'priority': 0x8000, 'fwd_delay': 8}}}
+                    'bridge': {'priority': 0x8000, 'fwd_delay': 8}},                                 
+                    dpid_lib.str_to_dpid('0000000000000002'):
+                    {'bridge': {'priority': 0x8000, 'fwd_delay': 8}},
+                    dpid_lib.str_to_dpid('0000000000000003'):
+                    {'bridge': {'priority': 0x8000, 'fwd_delay': 8}}}
 
 
         # Register the STP configuration
-        self.stp.set_config(self.config)
+        self.stp.set_config(config)
 
         # Register the REST API
         wsgi.register(TopoController, {switch_instance_name: self})
@@ -167,34 +159,52 @@ class Controller(SimpleSwitch13):
         self.sliceToPort = self.sliceConfigs[slicename]
         self.mac_to_port = {}
 
-        self.logger.info(f"{self.sliceToPort}")
+        listen_state = {}
+
+        for outer_key, inner_dict in self.sliceToPort.items():
+            for inner_key, value_list in inner_dict.items():
+                for value in value_list:
+                    if outer_key in listen_state:
+                        listen_state[outer_key].add(value)
+                    else: 
+                        listen_state[outer_key] = {value}
+
+        print(f"LISTEN: {listen_state}")
+
+        for bridge in self.stp.bridge_list.values():
+            for port in bridge.ports.values():
+                #self.logger.info(f"Switch: {str(int(bridge.dpid_str['dpid']))} -> Port: {port.ofport.port_no}")
+                if(port.ofport.port_no in listen_state[str(int(bridge.dpid_str['dpid']))]):
+                    port._change_status(2)
+                    #self.logger.info(f"Switch: {bridge.dpid_str} -> Port: {port.ofport.port_no} -> LISTEN")          
+                else:
+                    port._change_status(0)
+                    #self.logger.info(f"Switch: {bridge.dpid_str} -> Port: {port.ofport.port_no} -> DISABLE")   
+                    
         
-        config2 = {
-                    dpid_lib.str_to_dpid('0000000000000001'): {
-                        'bridge': {
-                            'priority': 0x8000, 'fwd_delay': 8
-                            },
-                        'ports': {
-                            1: {'enable': True},
-                            2: {'enable': True}, 
-                            3: {'enable': True}
-                            }
-                        },                                 
-                  dpid_lib.str_to_dpid('0000000000000002'):
-                  {'bridge': {'priority': 0x8000, 'fwd_delay': 8}},
-                  dpid_lib.str_to_dpid('0000000000000003'):
-                  {'bridge': {'priority': 0x8000, 'fwd_delay': 8}}}
-
-
-        # Register the STP configuration
-        self.stp.set_config(config2)
-
         for bridge in self.stp.bridge_list.values():
             try:
                 bridge.recalculate_spanning_tree()
-            except: AttributeError:
+            except AttributeError:
                 pass
-                
+
+    # for testing
+    def _get_ports(self): 
+        for bridge in self.stp.bridge_list.values():
+            for port in bridge.ports.values():
+                self.logger.info(f"Switch: {bridge.dpid_str} -> Port: {port.dpid_str} -> Status: {port.state}")          
+
+    # for testing
+    def _enable_ports(self): 
+        for bridge in self.stp.bridge_list.values():
+            for port in bridge.ports.values():
+                port._change_status(2)
+
+    # for testing   
+    def _disable_ports(self): 
+        for bridge in self.stp.bridge_list.values():
+            for port in bridge.ports.values():
+                port._change_status(0)
 
 class TopoController(ControllerBase):
     def __init__(self, req, link, data, **config):
@@ -205,3 +215,18 @@ class TopoController(ControllerBase):
     @route('change_slice', url + "/slice/{slicename}", methods=['GET'])#, requirements={'slicename': r'\d+'})
     def change_slice(self, req, slicename, **kwargs):
         self.switch_app._change_slice(slicename)
+
+    # for testing
+    @route('get_ports', url + "/ports", methods=['GET'])
+    def get_ports(self, req, **kwargs):
+        self.switch_app._get_ports()
+
+    # for testing
+    @route('enable_ports', url + "/enablePorts", methods=['GET'])
+    def enable_ports(self, req, **kwargs):
+        self.switch_app._enable_ports()
+
+    # for testing
+    @route('disable_ports', url + "/disablePorts", methods=['GET'])
+    def disable_ports(self, req, **kwargs):
+        self.switch_app._disable_ports()
