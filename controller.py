@@ -155,6 +155,13 @@ class Controller(SimpleSwitch13):
         self.logger.debug("[dpid=%s][port=%d] state=%s",
                           dpid_str, ev.port_no, of_state[ev.port_state])
 
+    def restart_stp(self):
+        for bridge in self.stp.bridge_list.values():
+            try:
+                bridge.recalculate_spanning_tree()
+            except AttributeError:
+                pass
+
     def _change_slice(self, slicename):
         self.sliceToPort = self.sliceConfigs[slicename]
         self.mac_to_port = {}
@@ -169,24 +176,25 @@ class Controller(SimpleSwitch13):
                     else: 
                         listen_state[outer_key] = {value}
 
-        print(f"LISTEN: {listen_state}")
-
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
-                #self.logger.info(f"Switch: {str(int(bridge.dpid_str['dpid']))} -> Port: {port.ofport.port_no}")
                 if(port.ofport.port_no in listen_state[str(int(bridge.dpid_str['dpid']))]):
-                    port._change_status(2)
-                    #self.logger.info(f"Switch: {bridge.dpid_str} -> Port: {port.ofport.port_no} -> LISTEN")          
+                    port._change_status(2)        
                 else:
                     port._change_status(0)
-                    #self.logger.info(f"Switch: {bridge.dpid_str} -> Port: {port.ofport.port_no} -> DISABLE")   
-                    
+                        
+        self.restart_stp()
+
+    def _deactivate_slice(self):
+        self.sliceToPort = self.sliceConfigs["default"]
+        self.mac_to_port = {}
+
         
         for bridge in self.stp.bridge_list.values():
-            try:
-                bridge.recalculate_spanning_tree()
-            except AttributeError:
-                pass
+            for port in bridge.ports.values():
+                port._change_status(2)     
+                        
+        self.restart_stp()
 
     # for testing
     def _get_ports(self): 
@@ -212,7 +220,11 @@ class TopoController(ControllerBase):
         super(TopoController, self).__init__(req, link, data, **config)
         self.switch_app = data[switch_instance_name]
 
-    @route('change_slice', url + "/slice/{slicename}", methods=['GET'])#, requirements={'slicename': r'\d+'})
+    @route('deactivate_slice', url + "/sliceDeactivation", methods=['GET'])
+    def deactivate_slice(self, req, **kwargs):
+        self.switch_app._deactivate_slice()
+
+    @route('change_slice', url + "/slice/{slicename}", methods=['GET'])
     def change_slice(self, req, slicename, **kwargs):
         self.switch_app._change_slice(slicename)
 
