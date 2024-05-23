@@ -32,26 +32,10 @@ class Controller(SimpleSwitch13):
 
         self.mac_to_port = {}
 
-        self.sliceConfigs = {"default": {
-            "1": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
-            "2": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
-            "3": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
-            "4": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
-            "5": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]},
-            "6": {"1": [2,3,4,5,6], "2": [1,3,4,5,6], "3": [1,2,4,5,6], "4": [1,2,3,5,6], "5": [1,2,3,4,6], "6": [1,2,3,4,5]}
-        },
-            "test1":{
-            "1": {"1": [2,3], "2":[1,3], "3": [1,2]},
-            "2": {"1": [3], "3": [1]},
-            "3": {"1": [3], "3": [1]}
-        } ,
-            "test2": {
-            "1": {"1": [3], "3": [1]},
-            "2": {"1": [2,3], "2":[1,3], "3": [1,2]},
-            "3": {"2": [3], "3": [2]}
-        }}
+        self.sliceConfigs = json.load(open("slices/slices.json"))
 
-        self.sliceToPort = self.sliceConfigs["default"]
+        self.sliceName = "default"
+        self.sliceToPort = self.sliceConfigs[self.sliceName]
 
         config = {
                     dpid_lib.str_to_dpid('0000000000000001'): {
@@ -103,17 +87,17 @@ class Controller(SimpleSwitch13):
             return
 
         # Check if the communication is allowed
-        if str(in_port) in self.sliceToPort[str(dpid)]: 
+        if str(in_port) in self.sliceToPort["rules"][str(dpid)]: 
             # Learn a mac address to avoid FLOOD next time.
             self.mac_to_port[dpid][src] = in_port
 
             #self.logger.info(f"DPID: {dpid}, SRC: {src}, DST: {dst}, IN_PORT: {in_port}, MAC_TO_PORT[dpid] {self.mac_to_port[dpid]}, self.mac_to_port[dpid][dst]:")
             # If the destination is known, send the packet to the destination
-            if dst in self.mac_to_port[dpid] and self.mac_to_port[dpid][dst] in self.sliceToPort[str(dpid)][str(in_port)]:
+            if dst in self.mac_to_port[dpid] and self.mac_to_port[dpid][dst] in self.sliceToPort["rules"][str(dpid)][str(in_port)]:
                 out_port = [self.mac_to_port[dpid][dst]]
             else:
                 # Flood the packet to all possible ports (based on the slice restrictions)
-                out_port = self.sliceToPort[str(dpid)][str(in_port)]
+                out_port = self.sliceToPort["rules"][str(dpid)][str(in_port)]
                 self.logger.info("Destination unknown: switch: %s, flooding on ports: %s", dpid, out_port)
 
             # Create the actions list: send the packet to each port in out_port
@@ -163,12 +147,13 @@ class Controller(SimpleSwitch13):
                 pass
 
     def _change_slice(self, slicename):
-        self.sliceToPort = self.sliceConfigs[slicename]
+        self.sliceName = slicename
+        self.sliceToPort = self.sliceConfigs[self.sliceName]
         self.mac_to_port = {}
 
         listen_state = {}
 
-        for outer_key, inner_dict in self.sliceToPort.items():
+        for outer_key, inner_dict in self.sliceToPort["rules"].items():
             for inner_key, value_list in inner_dict.items():
                 for value in value_list:
                     if outer_key in listen_state:
@@ -186,7 +171,8 @@ class Controller(SimpleSwitch13):
         self.restart_stp()
 
     def _deactivate_slice(self):
-        self.sliceToPort = self.sliceConfigs["default"]
+        self.sliceName = "default"
+        self.sliceToPort = self.sliceConfigs[self.sliceName]
         self.mac_to_port = {}
 
         
@@ -200,7 +186,7 @@ class Controller(SimpleSwitch13):
     def _get_ports(self): 
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
-                self.logger.info(f"Switch: {bridge.dpid_str} -> Port: {port.dpid_str} -> Status: {port.state}")          
+                self.logger.info(f"Switch: {bridge.dpid_str} -> Port: {port.ofport.port_no} -> Status: {port.state}")          
 
     # for testing
     def _enable_ports(self): 

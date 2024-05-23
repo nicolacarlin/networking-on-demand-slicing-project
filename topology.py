@@ -22,12 +22,12 @@ class NetworkPhysicalTopo(Topo):
         hosts = []
 
         # Create switch nodes
-        for i in range(1,4):
+        for i in range(1,7):
             sconfig = {"dpid": "%016x" % (i)}
             switches.append(self.addSwitch("s%d" % (i), **sconfig))
             
         # Create host nodes
-        for i in range(1,4):
+        for i in range(1,7):
             hosts.append(self.addHost("h%d" % (i), **host_config))
 
         # Add switch links
