@@ -227,6 +227,8 @@ class TopoController(ControllerBase):
             if "slice" in req:
                 self.switch_app.sliceConfigs[req["name"]] = req["slice"]
                 self.switch_app._change_slice(req["name"])
+                with open(template_file_path, "w") as template_file:
+                    json.dump(self.switch_app.sliceConfigs, template_file)
                 return Response(status=409, content_type='application/json', text=json.dumps({"status": "success", "message":"Slice added and configured"}))
             else: 
                 return Response(status=400, content_type='application/json', text=json.dumps({"status": "error", "message":"Slice not defined."}))
