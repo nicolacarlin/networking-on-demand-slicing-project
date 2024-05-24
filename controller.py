@@ -14,6 +14,7 @@ from ryu.app.simple_switch_13 import SimpleSwitch13
 
 switch_instance_name = 'switch_api_app'
 url = '/api/v1'
+template_file_path = "slices/slices.json"
 
 class Controller(SimpleSwitch13):
 
@@ -32,7 +33,7 @@ class Controller(SimpleSwitch13):
 
         self.mac_to_port = {}
 
-        self.sliceConfigs = json.load(open("slices/slices.json"))
+        self.sliceConfigs = json.load(open(template_file_path))
 
         self.sliceName = "default"
         self.sliceToPort = self.sliceConfigs[self.sliceName]
@@ -210,6 +211,26 @@ class TopoController(ControllerBase):
     def deactivate_slice(self, req, **kwargs):
         self.switch_app._deactivate_slice()
 
+    @route('creation_slice', url + "/sliceCreation", methods=['POST'])
+    def creation_slice(self, req, **kwargs):
+        try:
+            if req.body:
+                req = req.json
+            else:
+                return Response(status=400, content_type='application/json', text=json.dumps({"status": "error", "message":"Empty value."}))
+        except:
+            return Response(status=400, content_type='application/json', text=json.dumps({"status": "error", "message":"Invalid format."}))
+
+        if "name" in req and req["name"] in self.switch_app.sliceConfigs:
+            return Response(status=409, content_type='application/json', text=json.dumps({"status": "error", "message":"Slice already present."}))
+        else:
+            if "slice" in req:
+                self.switch_app.sliceConfigs[req["name"]] = req["slice"]
+                self.switch_app._change_slice(req["name"])
+                return Response(status=409, content_type='application/json', text=json.dumps({"status": "success", "message":"Slice added and configured"}))
+            else: 
+                return Response(status=400, content_type='application/json', text=json.dumps({"status": "error", "message":"Slice not defined."}))
+                
     @route('change_slice', url + "/slice/{slicename}", methods=['GET'])
     def change_slice(self, req, slicename, **kwargs):
         self.switch_app._change_slice(slicename)
