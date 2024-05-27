@@ -235,16 +235,18 @@ class TopoController(ControllerBase):
 
     @route('deletion_slice', url + "/sliceDeletion/{slicename}", methods=['DELETE'])
     def deletion_slice(self, req, slicename, **kwargs):
-        if slicename in self.switch_app.sliceConfigs:
-            self.switch_app._change_slice("default")
-            del self.switch_app.sliceConfigs[slicename]
-            with open(template_file_path, "w") as template_file:
-                json.dump(self.switch_app.sliceConfigs, template_file)
-            return Response(status=200, content_type='application/json', text=json.dumps({"status": "success", "message":"Slice deleted"}))
+        if slicename != "default":
+            if slicename in self.switch_app.sliceConfigs:
+                if slicename == self.switch_app.sliceName:
+                    self.switch_app._change_slice("default")
+                del self.switch_app.sliceConfigs[slicename]
+                with open(template_file_path, "w") as template_file:
+                    json.dump(self.switch_app.sliceConfigs, template_file)
+                return Response(status=200, content_type='application/json', text=json.dumps({"status": "success", "message":"Slice deleted"}))
+            else:
+                return Response(status=409, content_type='application/json', text=json.dumps({"status": "error", "message":"Slice not present."}))
         else:
-            return Response(status=400, content_type='application/json', text=json.dumps({"status": "error", "message":"Slice not present."}))
-
-            
+            return Response(status=409, content_type='application/json', text=json.dumps({"status": "error", "message":"Impossible to delete default slice."}))
 
     @route('change_slice', url + "/slice/{slicename}", methods=['GET'])
     def change_slice(self, req, slicename, **kwargs):
