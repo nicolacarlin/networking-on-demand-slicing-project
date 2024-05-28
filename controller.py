@@ -146,25 +146,28 @@ class Controller(SimpleSwitch13):
                 bridge.recalculate_spanning_tree()
             except AttributeError:
                 pass
+    
+    def parse_active_ports(self):
+        active_ports = {}
+        for outer_key, inner_dict in self.sliceToPort["rules"].items():
+            for inner_key, value_list in inner_dict.items():
+                for value in value_list:
+                    if outer_key in active_ports and value not in active_ports[outer_key]:
+                        active_ports[outer_key].append(value)
+                    else: 
+                        active_ports[outer_key] = [value]
+        return active_ports
 
     def _change_slice(self, slicename):
         self.sliceName = slicename
         self.sliceToPort = self.sliceConfigs[self.sliceName]
         self.mac_to_port = {}
 
-        listen_state = {}
-
-        for outer_key, inner_dict in self.sliceToPort["rules"].items():
-            for inner_key, value_list in inner_dict.items():
-                for value in value_list:
-                    if outer_key in listen_state:
-                        listen_state[outer_key].add(value)
-                    else: 
-                        listen_state[outer_key] = {value}
+        active_ports = self.parse_active_ports()
 
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
-                if(port.ofport.port_no in listen_state[str(int(bridge.dpid_str['dpid']))]):
+                if(port.ofport.port_no in active_ports[str(int(bridge.dpid_str['dpid']))]):
                     port._change_status(2)        
                 else:
                     port._change_status(0)
@@ -175,7 +178,6 @@ class Controller(SimpleSwitch13):
         self.sliceName = "default"
         self.sliceToPort = self.sliceConfigs[self.sliceName]
         self.mac_to_port = {}
-
         
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
@@ -251,6 +253,10 @@ class TopoController(ControllerBase):
     @route('change_slice', url + "/slice/{slicename}", methods=['GET'])
     def change_slice(self, req, slicename, **kwargs):
         self.switch_app._change_slice(slicename)
+
+    @route('get_active_slice_template', url + "/activeSlice", methods=['GET'])
+    def get_active_slice_template(self, req, **kwargs):
+        return Response(status=200, content_type='application/json', text=json.dumps({"status": "success", "message":self.switch_app.parse_active_ports()}))
 
     # for testing
     @route('get_ports', url + "/ports", methods=['GET'])

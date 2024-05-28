@@ -2,9 +2,6 @@
     border: 1px solid #000000;  
 }
 
-.node {
-}
-
 .node.fixed {
     fill: #C0C0C0;
 }
@@ -13,8 +10,14 @@
     font-size: 14px;
 }
 
-.link {
+.disabledLink {
     stroke: #090909;
+    stroke-opacity: .6;
+    stroke-width: 2px;
+}
+
+.activeLink {
+    stroke: #68d420;
     stroke-opacity: .6;
     stroke-width: 2px;
 }
