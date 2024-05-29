@@ -211,10 +211,12 @@ class TopoController(ControllerBase):
 
     @route('deactivate_slice', url + "/sliceDeactivation", methods=['GET'])
     def deactivate_slice(self, req, **kwargs):
+        self.switch_app.logger.info("\nReceived a request to deactivate current slice\n")
         self.switch_app._deactivate_slice()
 
     @route('creation_slice', url + "/sliceCreation", methods=['POST'])
     def creation_slice(self, req, **kwargs):
+        self.switch_app.logger.info("\nReceived a request to create a new slice\n")
         try:
             if req.body:
                 req = req.json
@@ -237,6 +239,7 @@ class TopoController(ControllerBase):
 
     @route('deletion_slice', url + "/sliceDeletion/{slicename}", methods=['DELETE'])
     def deletion_slice(self, req, slicename, **kwargs):
+        self.switch_app.logger.info("\nReceived a request to delete current slice\n")
         if slicename != "default":
             if slicename in self.switch_app.sliceConfigs:
                 if slicename == self.switch_app.sliceName:
@@ -252,11 +255,18 @@ class TopoController(ControllerBase):
 
     @route('change_slice', url + "/slice/{slicename}", methods=['GET'])
     def change_slice(self, req, slicename, **kwargs):
+        self.switch_app.logger.info("\nReceived a request to change current slice\n")
         self.switch_app._change_slice(slicename)
 
     @route('get_active_slice_template', url + "/activeSlice", methods=['GET'])
     def get_active_slice_template(self, req, **kwargs):
+        self.switch_app.logger.info("\nReceived a request for the current slice\n")
         return Response(status=200, content_type='application/json', text=json.dumps({"status": "success", "message":self.switch_app.parse_active_ports()}))
+
+    @route('get_slices', url + "/slices", methods=['GET'])
+    def get_slices(self, req, **kwargs):
+        self.switch_app.logger.info("\nReceived a request for all slices\n")
+        return Response(status=200, content_type='application/json', text=json.dumps({"status": "success", "message":list(self.switch_app.sliceConfigs.keys())}))
 
     # for testing
     @route('get_ports', url + "/ports", methods=['GET'])

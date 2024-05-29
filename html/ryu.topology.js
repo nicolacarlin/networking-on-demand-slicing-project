@@ -4,20 +4,20 @@ var CONF = {
         height: 40
     },
     force: {
-        width: 960,
-        height: 500,
-        dist: 200,
+        width: 900,
+        height: 800,
+        dist: 400,
         charge: -600
     }
 };
 
 var ws = new WebSocket("ws://" + location.host + "/v1.0/topology/ws");
-ws.onmessage = function(event) {
+ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
     var result = rpc[data.method](data.params);
 
-    var ret = {"id": data.id, "jsonrpc": "2.0", "result": result};
+    var ret = { "id": data.id, "jsonrpc": "2.0", "result": result };
     this.send(JSON.stringify(ret));
 }
 
@@ -44,14 +44,14 @@ var elem = {
         .attr("width", CONF.force.width)
 };
 function _tick() {
-    elem.link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+    elem.link.attr("x1", function (d) { return d.source.x; })
+        .attr("y1", function (d) { return d.source.y; })
+        .attr("x2", function (d) { return d.target.x; })
+        .attr("y2", function (d) { return d.target.y; });
 
-    elem.node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    elem.node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 
-    elem.port.attr("transform", function(d) {
+    elem.port.attr("transform", function (d) {
         var p = topo.get_port_point(d);
         return "translate(" + p.x + "," + p.y + ")";
     });
@@ -59,17 +59,21 @@ function _tick() {
 elem.drag = elem.force.drag().on("dragstart", _dragstart);
 function _dragstart(d) {
     var dpid = dpid_to_int(d.dpid)
-    d3.json("/stats/flow/" + dpid, function(e, data) {
+    d3.json("/stats/flow/" + dpid, function (e, data) {
         flows = data[dpid];
         elem.console.selectAll("ul").remove();
     });
     d3.select(this).classed("fixed", d.fixed = true);
 }
+
 elem.node = elem.svg.selectAll(".node");
 elem.link = elem.svg.selectAll(".link");
 elem.port = elem.svg.selectAll(".port");
 elem.update = function () {
-    this.force
+    elem.node = elem.svg.selectAll(".node");
+    elem.link = elem.svg.selectAll(".link");
+    elem.port = elem.svg.selectAll(".port");
+    this.force 
         .nodes(topo.nodes)
         .links(topo.links)
         .start();
@@ -77,32 +81,32 @@ elem.update = function () {
     this.link = this.link.data(topo.links);
     this.link.exit().remove();
     var linkEnter = this.link.enter().append("line").call(this.drag);
-    linkEnter.filter(function(d){return d.status != 0;}).attr("class", "activeLink");
-    linkEnter.filter(function(d){return d.status == 0;}).attr("class", "disabledLink");
+    linkEnter.filter(function (d) { return d.status != 0; }).attr("class", "activeLink");
+    linkEnter.filter(function (d) { return d.status == 0; }).attr("class", "disabledLink");
 
     this.node = this.node.data(topo.nodes);
     this.node.exit().remove();
     var nodeEnter = this.node.enter().append("g")
         .attr("class", "node")
-        .on("dblclick", function(d) { d3.select(this).classed("fixed", d.fixed = false); })
+        .on("dblclick", function (d) { d3.select(this).classed("fixed", d.fixed = false); })
         .call(this.drag);
-    nodeEnter.filter(function(d){return d.dpid.startsWith("h");}).append("image")
+    nodeEnter.filter(function (d) { return d.dpid.startsWith("h"); }).append("image")
         .attr("xlink:href", "./images/host.svg")
-        .attr("x", -CONF.image.width/2)
-        .attr("y", -CONF.image.height/2)
+        .attr("x", -CONF.image.width / 2)
+        .attr("y", -CONF.image.height / 2)
         .attr("width", CONF.image.width)
         .attr("height", CONF.image.height);
-    nodeEnter.filter(function(d){return !d.dpid.startsWith("h");}).append("image")
+    nodeEnter.filter(function (d) { return !d.dpid.startsWith("h"); }).append("image")
         .attr("xlink:href", "./images/switch.svg")
-        .attr("x", -CONF.image.width/2)
-        .attr("y", -CONF.image.height/2)
+        .attr("x", -CONF.image.width / 2)
+        .attr("y", -CONF.image.height / 2)
         .attr("width", CONF.image.width)
         .attr("height", CONF.image.height);
     nodeEnter.append("text")
-        .attr("dx", -CONF.image.width/2)
-        .attr("dy", CONF.image.height-10)
-        .text(function(d) { return "dpid: " + trim_zero(d.dpid); });
-        
+        .attr("dx", -CONF.image.width / 2)
+        .attr("dy", CONF.image.height - 10)
+        .text(function (d) { return "dpid: " + trim_zero(d.dpid); });
+
     var ports = topo.get_ports();
     this.port.remove();
     this.port = this.svg.selectAll(".port").data(ports);
@@ -113,7 +117,7 @@ elem.update = function () {
     portEnter.append("text")
         .attr("dx", -3)
         .attr("dy", 3)
-        .text(function(d) { return trim_zero(d.port_no); });
+        .text(function (d) { return trim_zero(d.port_no); });
 };
 
 function is_valid_link(link) {
@@ -125,6 +129,9 @@ var topo = {
     links: [],
     node_index: {}, // dpid -> index of nodes array
     initialize: function (data) {
+        this.nodes = [];
+        this.links = [];
+        this.node_index = {};
         this.add_nodes(data.switches);
         this.add_nodes(data.hosts);
         this.add_links(data.links);
@@ -186,9 +193,9 @@ var topo = {
     get_link_index: function (link) {
         for (var i = 0; i < this.links.length; i++) {
             if (link.src.dpid == this.links[i].port.src.dpid &&
-                    link.src.port_no == this.links[i].port.src.port_no &&
-                    link.dst.dpid == this.links[i].port.dst.dpid &&
-                    link.dst.port_no == this.links[i].port.dst.port_no) {
+                link.src.port_no == this.links[i].port.src.port_no &&
+                link.dst.dpid == this.links[i].port.dst.dpid &&
+                link.dst.port_no == this.links[i].port.dst.port_no) {
                 return i;
             }
         }
@@ -229,9 +236,9 @@ var topo = {
         var x = x1 * weight + x2 * (1.0 - weight);
         var y = y1 * weight + y2 * (1.0 - weight);
 
-        return {x: x, y: y};
+        return { x: x, y: y };
     },
-    refresh_node_index: function(){
+    refresh_node_index: function () {
         this.node_index = {};
         for (var i = 0; i < this.nodes.length; i++) {
             this.node_index[this.nodes[i].dpid] = i;
@@ -242,43 +249,42 @@ var topo = {
 var rpc = {
     event_switch_enter: function (params) {
         var switches = [];
-        for(var i=0; i < params.length; i++){
-            switches.push({"dpid":params[i].dpid,"ports":params[i].ports});
+        for (var i = 0; i < params.length; i++) {
+            switches.push({ "dpid": params[i].dpid, "ports": params[i].ports });
         }
         topo.add_nodes(switches);
-        elem.update();
+        //elem.update();
         return "";
     },
     event_switch_leave: function (params) {
         var switches = [];
-        for(var i=0; i < params.length; i++){
-            switches.push({"dpid":params[i].dpid,"ports":params[i].ports});
+        for (var i = 0; i < params.length; i++) {
+            switches.push({ "dpid": params[i].dpid, "ports": params[i].ports });
         }
         topo.delete_nodes(switches);
-        elem.update();
+       // elem.update();
         return "";
     },
     event_link_add: function (links) {
         topo.add_links(links);
-        elem.update();
+        //elem.update();
         return "";
     },
     event_link_delete: function (links) {
         topo.delete_links(links);
-        elem.update();
+        //elem.update();
         return "";
     },
 }
 
-function parse_active_liks(active_links, links){
-    console.log(active_links)
-    for(var i = 0; i < links.length; i++){
+function parse_active_liks(active_links, links) {
+    for (var i = 0; i < links.length; i++) {
         var src_switch = parseInt(links[i]["src"]["dpid"]);
         var src_port = parseInt(links[i]["src"]["port_no"]);
         var dst_switch = parseInt(links[i]["dst"]["dpid"]);
         var dst_port = parseInt(links[i]["dst"]["port_no"]);
 
-        if(active_links[src_switch].includes(src_port) && active_links[dst_switch].includes(dst_port)){
+        if (active_links[src_switch].includes(src_port) && active_links[dst_switch].includes(dst_port)) {
             links[i]["Status"] = 1;
         } else {
             links[i]["Status"] = 0;
@@ -290,22 +296,23 @@ function parse_active_liks(active_links, links){
 }
 
 function initialize_topology() {
-    d3.json("/v1.0/topology/switches", function(error, switches) {
-        d3.json("/v1.0/topology/hosts", function(error, hosts) {
-            d3.json("/v1.0/topology/links", function(error, links) {
-                d3.json("/api/v1/activeSlice", function(error, active_links){
+    d3.select("svg").selectAll("*").remove();
+    d3.json("/v1.0/topology/switches", function (error, switches) {
+        d3.json("/v1.0/topology/hosts", function (error, hosts) {
+            d3.json("/v1.0/topology/links", function (error, links) {
+                d3.json("/api/v1/activeSlice", function (error, active_links) {
                     links = parse_active_liks(active_links["message"], links);
-                    hosts_links=[]  
+                    hosts_links = []
                     //Sort hosts and switches to replicate connection
-                    hosts.sort((a,b) => a.mac > b.mac);
-                    switches.sort((a,b) => a.dpid > b.dpid);
-                    
-                    for(var i = 0; i < hosts.length;i++){
-                        link={src:{dpid:"h"+(i+1),hw_addr:hosts[i].mac,name:"h"+(i+1)+"-s"+(i+1),port_no:"00000001"},dst:{dpid:switches[i].dpid,hw_addr:switches[i].ports[0].hw_addr,name:switches[i].ports[0].name,port_no:switches[i].ports[0].port_no}}
+                    hosts.sort((a, b) => a.mac > b.mac);
+                    switches.sort((a, b) => a.dpid > b.dpid);
+
+                    for (var i = 0; i < hosts.length; i++) {
+                        link = { src: { dpid: "h" + (i + 1), hw_addr: hosts[i].mac, name: "h" + (i + 1) + "-s" + (i + 1), port_no: "00000001" }, dst: { dpid: switches[i].dpid, hw_addr: switches[i].ports[0].hw_addr, name: switches[i].ports[0].name, port_no: switches[i].ports[0].port_no } }
                         hosts_links.push(link);
-                        hosts[i].dpid="h"+(i+1);
+                        hosts[i].dpid = "h" + (i + 1);
                     }
-                    topo.initialize({switches: switches, links: links, hosts:hosts, hosts_links:hosts_links});
+                    topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
                     elem.update();
                 });
             });
@@ -313,8 +320,34 @@ function initialize_topology() {
     });
 }
 
+function initialize_buttons() {
+    d3.json("/api/v1/slices", function (error, slices) {
+        var slices = slices["message"];
+        let basic_slices_div = document.getElementById("basicSlices");
+        let custom_slices_div = document.getElementById("customSlices");
+        let basic_slices = ["default", "tree", "intersection"];
+        for (var i = 0; i < slices.length; i++) {
+            const button = document.createElement("button");
+            button.textContent = slices[i];
+            button.className = "button";
+            button.onclick = function () {
+                d3.json("/api/v1/slice/" + button.innerText, function (error, tmp) {
+                    initialize_topology();
+                });
+                return false;
+            }
+            if (basic_slices.includes(slices[i])) {
+                basic_slices_div.appendChild(button);
+            } else {
+                custom_slices_div.appendChild(button);
+            }
+        }
+    });
+}
+
 function main() {
     initialize_topology();
+    initialize_buttons();
 }
 
 main();
