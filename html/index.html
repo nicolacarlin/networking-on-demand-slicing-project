@@ -1,46 +1,39 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-      <link rel="stylesheet" type="text/css" href="./index.css">
-      <link rel="stylesheet" type="text/css" href="./ryu.topology.css">
-      <script src="d3.v3.min.js"></script>
-  </head>
-  <body>
-    <h1>Super Ryu Topology Viewer</h1>
-    <div class="menu" id="menu" >
-      <h2>Menu</h2>
 
-      <hr>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="./index.css">
+  <link rel="stylesheet" type="text/css" href="./ryu.topology.css">
+  <script src="d3.v3.min.js"></script>
+</head>
 
-      <div class="subMenu" id="genericButtons">
-        <h3>Generic buttons</h3>
-        <button class="button" id="createSlice">Create new custom slice</button>
-        <button class="button" id="deactivateSlice">Disable current slice</button>
-        <button class="button" id="deleteSlice">Delete current slice</button>
-      </div>
+<body>
+  <h1>Super Ryu Topology Viewer</h1>
+  <div class="menu" id="menu">
+    <h2>Menu</h2>
 
-      <hr>
-      
-      <div class="subMenu" id="basicSlices">
-        <h3>Default slices</h3>
-      </div>
+    <hr>
 
-      <hr>
-
-      <div class="subMenu" id="customSlices">
-        <h3>Custom slices</h3>
-      </div>
+    <div class="subMenu" id="genericButtons">
+      <h3>Generic buttons</h3>
+      <button class="button" id="createSlice">Create new custom slice</button>
+      <button class="button" id="deleteSlice">Delete a slice</button>
     </div>
 
-    <script type="text/javascript">
-      document.getElementById("createSlice").onclick = function (){
-        location.href = "link";
-      };
-      document.getElementById("deactivateSlice").onclick = function (){
-        location.href = "link";
-      };
-    </script>
-    <script src="./ryu.topology.js" charset="utf-8"></script>
-  </body>
+    <hr>
+
+    <div class="subMenu" id="slices">
+      <h3>Slices</h3>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    document.getElementById("createSlice").onclick = function () {
+      location.href = "link";
+    };
+  </script>
+  <script src="./ryu.topology.js" charset="utf-8"></script>
+</body>
+
 </html>

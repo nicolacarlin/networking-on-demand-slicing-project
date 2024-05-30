@@ -73,7 +73,7 @@ elem.update = function () {
     elem.node = elem.svg.selectAll(".node");
     elem.link = elem.svg.selectAll(".link");
     elem.port = elem.svg.selectAll(".port");
-    this.force 
+    this.force
         .nodes(topo.nodes)
         .links(topo.links)
         .start();
@@ -262,7 +262,7 @@ var rpc = {
             switches.push({ "dpid": params[i].dpid, "ports": params[i].ports });
         }
         topo.delete_nodes(switches);
-       // elem.update();
+        // elem.update();
         return "";
     },
     event_link_add: function (links) {
@@ -323,9 +323,7 @@ function initialize_topology() {
 function initialize_buttons() {
     d3.json("/api/v1/slices", function (error, slices) {
         var slices = slices["message"];
-        let basic_slices_div = document.getElementById("basicSlices");
-        let custom_slices_div = document.getElementById("customSlices");
-        let basic_slices = ["default", "tree", "intersection"];
+        let slices_div = document.getElementById("slices");
         for (var i = 0; i < slices.length; i++) {
             const button = document.createElement("button");
             button.textContent = slices[i];
@@ -334,13 +332,8 @@ function initialize_buttons() {
                 d3.json("/api/v1/slice/" + button.innerText, function (error, tmp) {
                     initialize_topology();
                 });
-                return false;
             }
-            if (basic_slices.includes(slices[i])) {
-                basic_slices_div.appendChild(button);
-            } else {
-                custom_slices_div.appendChild(button);
-            }
+            slices_div.appendChild(button);
         }
     });
 }
