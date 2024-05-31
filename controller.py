@@ -53,6 +53,21 @@ class Controller(SimpleSwitch13):
         # Register the REST API
         wsgi.register(TopoController, {switch_instance_name: self})
 
+    def add_flow(self, datapath, priority, match, actions, buffer_id=None):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
+                                             actions)]
+        if buffer_id:
+            mod = parser.OFPFlowMod(datapath=datapath, table_id=1, buffer_id=buffer_id,
+                                    priority=priority, match=match,
+                                    instructions=inst)
+        else:
+            mod = parser.OFPFlowMod(datapath=datapath, table_id=1, priority=priority,
+                                    match=match, instructions=inst)
+        datapath.send_msg(mod)
+
     def delete_flow(self, datapath):
 
         ofproto = datapath.ofproto
@@ -159,9 +174,50 @@ class Controller(SimpleSwitch13):
         return active_ports
 
     def _change_slice(self, slicename):
+        #remove qos
+        res = requests.delete("http://localhost:8080/qos/rules/all/all", data=json.dumps({"rule_id": "all", "qos_id": "all"}))
+        self.logger.info(res)
+
+        #remove all queues
+        for qos_rules in self.sliceConfigs[self.sliceName]["qos"]:
+            res = requests.delete("http://localhost:8080/qos/queue/"+dpid_lib.dpid_to_str(qos["id"]))
+            self.logger.info(res)
+
+        time.sleep(1)
+
         self.sliceName = slicename
         self.sliceToPort = self.sliceConfigs[self.sliceName]
         self.mac_to_port = {}
+
+        #Set new qos
+        for qos_rules in self.sliceConfigs[self.sliceName]["qos"]:
+            res = requests.put("http://localhost:8080/v1.0/conf/switches/" + dpid_lib.dpid_to_str(qos_rules["id"]) + "/ovsdb_addr", data='"tcp:127.0.0.1:6635"')
+            self.logger.info(res)
+
+            time.sleep(1)
+
+            res = requests.post("http://localhost:8080/qos/queue/"+dpid_lib.dpid_to_str(qos_rules["id"]), json.dumps({
+                "port_name": qos_rules["port"],
+                "type": "linux-htb",
+                "queues": [{"max_rate": queue} for queue in qos_rules["queues"]]
+            }))
+            self.logger.info(res)
+
+            time.sleep(1)
+
+            for index, match in self.sliceConfigs[self.sliceName]["qos"]["match"]: 
+                res = requests.post("http://localhost:8080/qos/rules/"+dpid_lib.dpid_to_str(qos_rules["id"]), json.dumps({
+                    "match": {
+                        "nw_dest": match["dst"],
+                        "nw_src": match["src"]
+                    },
+                    "actions": {
+                        "queue": self.sliceConfigs[self.sliceName]["qos"]["queues"][index] 
+                    }
+                }))
+                self.logger.info(res)
+
+                time.sleep(1)
 
         active_ports = self.parse_active_ports()
 
