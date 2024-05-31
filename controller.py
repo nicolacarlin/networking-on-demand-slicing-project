@@ -180,7 +180,7 @@ class Controller(SimpleSwitch13):
 
         #remove all queues
         for qos_rules in self.sliceConfigs[self.sliceName]["qos"]:
-            res = requests.delete("http://localhost:8080/qos/queue/"+dpid_lib.dpid_to_str(qos["id"]))
+            res = requests.delete("http://localhost:8080/qos/queue/"+dpid_lib.dpid_to_str(qos_rules["id"]))
             self.logger.info(res)
 
         time.sleep(1)
