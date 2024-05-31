@@ -29,6 +29,8 @@ function dpid_to_int(dpid) {
     return Number("0x" + dpid);
 }
 
+var current_slice = "default";
+
 var elem = {
     force: d3.layout.force()
         .size([CONF.force.width, CONF.force.height])
@@ -297,45 +299,81 @@ function parse_active_liks(active_links, links) {
 
 function initialize_topology() {
     d3.select("svg").selectAll("*").remove();
-    d3.json("/v1.0/topology/switches", function (error, switches) {
-        d3.json("/v1.0/topology/hosts", function (error, hosts) {
-            d3.json("/v1.0/topology/links", function (error, links) {
-                d3.json("/api/v1/activeSlice", function (error, active_links) {
-                    links = parse_active_liks(active_links["message"], links);
-                    hosts_links = []
-                    //Sort hosts and switches to replicate connection
-                    hosts.sort((a, b) => a.mac > b.mac);
-                    switches.sort((a, b) => a.dpid > b.dpid);
 
-                    for (var i = 0; i < hosts.length; i++) {
-                        link = { src: { dpid: "h" + (i + 1), hw_addr: hosts[i].mac, name: "h" + (i + 1) + "-s" + (i + 1), port_no: "00000001" }, dst: { dpid: switches[i].dpid, hw_addr: switches[i].ports[0].hw_addr, name: switches[i].ports[0].name, port_no: switches[i].ports[0].port_no } }
-                        hosts_links.push(link);
-                        hosts[i].dpid = "h" + (i + 1);
-                    }
-                    topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
-                    elem.update();
-                });
+    fetch("/v1.0/topology/switches", {method: "GET"})
+        .then((response) => response.json()).then((switches) => {
+            
+            fetch("/v1.0/topology/hosts", {method: "GET"})
+                .then((response) => response.json()).then((hosts) => {
+
+                    fetch("/v1.0/topology/links", {method: "GET"})
+                        .then((response) => response.json()).then((links) => {
+
+                            fetch("/api/v1/activeSlice", {method: "GET"})
+                                .then((response) => response.json()).then((active_links) => {
+
+                                    links = parse_active_liks(active_links["message"], links);
+                                    hosts_links = []
+                                    //Sort hosts and switches to replicate connection
+                                    hosts.sort((a, b) => a.mac > b.mac);
+                                    switches.sort((a, b) => a.dpid > b.dpid);
+
+                                    for (var i = 0; i < hosts.length; i++) {
+                                        link = { src: { dpid: "h" + (i + 1), hw_addr: hosts[i].mac, name: "h" + (i + 1) + "-s" + (i + 1), port_no: "00000001" }, dst: { dpid: switches[i].dpid, hw_addr: switches[i].ports[0].hw_addr, name: switches[i].ports[0].name, port_no: switches[i].ports[0].port_no } }
+                                        hosts_links.push(link);
+                                        hosts[i].dpid = "h" + (i + 1);
+                                    }
+                                    topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
+                                    elem.update();
+                            });
+                    });
             });
-        });
     });
 }
 
 function initialize_buttons() {
-    d3.json("/api/v1/slices", function (error, slices) {
-        var slices = slices["message"];
-        let slices_div = document.getElementById("slices");
-        for (var i = 0; i < slices.length; i++) {
-            const button = document.createElement("button");
-            button.textContent = slices[i];
-            button.className = "button";
-            button.onclick = function () {
-                d3.json("/api/v1/slice/" + button.innerText, function (error, tmp) {
-                    initialize_topology();
-                });
+    fetch("/api/v1/slices", {method: "GET"})
+        .then((response) => response.json()).then((res) => {
+            var slices = res["message"];
+            let slices_div = document.getElementById("slices");
+            for (var i = 0; i < slices.length; i++) {
+                const button = document.createElement("button");
+                button.textContent = slices[i];
+                button.className = "button";
+                button.setAttribute("id", slices[i]);
+                button.onclick = function () {
+                    fetch("/api/v1/slice/" + button.innerText, {method: "GET"})
+                        .then((response) => response.json()).then((res) => {
+                            if (res["status"] == "success") {
+                                current_slice = button.innerText;
+                                initialize_topology();
+                            } else {
+                                alert(res["message"])
+                            }
+                    });
+                }
+                slices_div.appendChild(button);
             }
-            slices_div.appendChild(button);
-        }
     });
+}
+
+// Object { status: "error", message: "Slice not present." }
+// Object { status: "success", message: "Slice deleted" }
+
+function delete_slice(slice_to_delete) {
+    fetch("/api/v1/sliceDeletion/" + slice_to_delete, {method: "DELETE"})
+        .then((response) => response.json()).then((res) => {
+            if (res["status"] == "success") {
+                var button_to_delete = document.getElementById(slice_to_delete);
+                button_to_delete.remove();
+
+                if (current_slice == slice_to_delete){
+                    current_slice = "default";
+                    initialize_topology();
+                }
+            }
+            alert(res["message"])
+        });
 }
 
 function main() {

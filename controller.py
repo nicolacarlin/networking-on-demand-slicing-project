@@ -174,17 +174,6 @@ class Controller(SimpleSwitch13):
                         
         self.restart_stp()
 
-    def _deactivate_slice(self):
-        self.sliceName = "default"
-        self.sliceToPort = self.sliceConfigs[self.sliceName]
-        self.mac_to_port = {}
-        
-        for bridge in self.stp.bridge_list.values():
-            for port in bridge.ports.values():
-                port._change_status(2)     
-                        
-        self.restart_stp()
-
     # for testing
     def _get_ports(self): 
         for bridge in self.stp.bridge_list.values():
@@ -208,11 +197,6 @@ class TopoController(ControllerBase):
         """Initialize the controller"""
         super(TopoController, self).__init__(req, link, data, **config)
         self.switch_app = data[switch_instance_name]
-
-    @route('deactivate_slice', url + "/sliceDeactivation", methods=['GET'])
-    def deactivate_slice(self, req, **kwargs):
-        self.switch_app.logger.info("\nReceived a request to deactivate current slice\n")
-        self.switch_app._deactivate_slice()
 
     @route('creation_slice', url + "/sliceCreation", methods=['POST'])
     def creation_slice(self, req, **kwargs):
