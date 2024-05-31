@@ -7,6 +7,8 @@ from mininet.node import OVSKernelSwitch, RemoteController, OVSSwitch
 from mininet.cli import CLI
 from mininet.link import TCLink
 
+import time
+
 
 class NetworkPhysicalTopo(Topo):
     def __init__(self):
@@ -69,6 +71,12 @@ if __name__ == "__main__":
         s.cmd("sysctl -w net.ipv6.conf.lo.disable_ipv6=1")
 
     net.start()
+
+    # Generate gratuitous ARP until STP setup is complete
+    for h in net.hosts:
+        h.cmd(f"arping -U -I {h.name}-eth0 $(hostname -I) > /dev/null 2>&1 &")
+        h.cmd(f"tcpdump -c 1 'arp' and not host $(hostname -I) > /dev/null 2>&1 && pkill --nslist net --ns $$ arping > /dev/null 2>&1 &")
+        time.sleep(0.1)
 
     CLI(net)
     net.stop()
