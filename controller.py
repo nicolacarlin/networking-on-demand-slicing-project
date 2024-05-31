@@ -13,8 +13,13 @@ from ryu.controller import dpset
 from ryu.app.simple_switch_13 import SimpleSwitch13
 
 switch_instance_name = 'switch_api_app'
-url = '/api/v1'
 template_file_path = "slices/slices.json"
+
+PERS_REST_ENDPOINT = '/api/v1'
+BASE_REST_ENDPOINT = 'http://localhost:8082'
+QOS_REST_ENDPOINT = BASE_REST_ENDPOINT+'/qos'
+CONFSW_REST_ENDPOINT = BASE_REST_ENDPOINT+'/v1.0/conf/switches/'
+OVSDB_ADDR = 'tcp:127.0.0.1:6633'
 
 class Controller(SimpleSwitch13):
 
@@ -53,6 +58,7 @@ class Controller(SimpleSwitch13):
         # Register the REST API
         wsgi.register(TopoController, {switch_instance_name: self})
 
+    # Add table_id=1 to manage QoS
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
@@ -174,13 +180,13 @@ class Controller(SimpleSwitch13):
         return active_ports
 
     def _change_slice(self, slicename):
-        #remove qos
-        res = requests.delete("http://localhost:8080/qos/rules/all/all", data=json.dumps({"rule_id": "all", "qos_id": "all"}))
+        # Remove all QoS rules
+        res = requests.delete(QOS_REST_ENDPOINT+"/rules/all/all", data=json.dumps({"rule_id": "all", "qos_id": "all"}))
         self.logger.info(res)
 
-        #remove all queues
+        # Remove all QoS queues
         for qos_rules in self.sliceConfigs[self.sliceName]["qos"]:
-            res = requests.delete("http://localhost:8080/qos/queue/"+dpid_lib.dpid_to_str(qos_rules["id"]))
+            res = requests.delete(QOS_REST_ENDPOINT+"/queue/"+dpid_lib.dpid_to_str(qos_rules["sw_id"]))
             self.logger.info(res)
 
         time.sleep(1)
@@ -189,30 +195,31 @@ class Controller(SimpleSwitch13):
         self.sliceToPort = self.sliceConfigs[self.sliceName]
         self.mac_to_port = {}
 
-        #Set new qos
+        # Set new QoS
         for qos_rules in self.sliceConfigs[self.sliceName]["qos"]:
-            res = requests.put("http://localhost:8080/v1.0/conf/switches/" + dpid_lib.dpid_to_str(qos_rules["id"]) + "/ovsdb_addr", data='"tcp:127.0.0.1:6635"')
+            # qos_rules["sw_id"] == dpid of switch
+            res = requests.put(CONFSW_REST_ENDPOINT + dpid_lib.dpid_to_str(qos_rules["sw_id"]) + "/ovsdb_addr", data='f"{OVSDB_ADDR}"')
             self.logger.info(res)
 
             time.sleep(1)
 
-            res = requests.post("http://localhost:8080/qos/queue/"+dpid_lib.dpid_to_str(qos_rules["id"]), json.dumps({
+            res = requests.post(QOS_REST_ENDPOINT+"/queue/"+dpid_lib.dpid_to_str(qos_rules["sw_id"]), json.dumps({
                 "port_name": qos_rules["port"],
-                "type": "linux-htb",
+                "type": "linux-htb", # default type
                 "queues": [{"max_rate": queue} for queue in qos_rules["queues"]]
             }))
             self.logger.info(res)
 
             time.sleep(1)
 
-            for index, match in self.sliceConfigs[self.sliceName]["qos"]["match"]: 
-                res = requests.post("http://localhost:8080/qos/rules/"+dpid_lib.dpid_to_str(qos_rules["id"]), json.dumps({
+            for index, match in enumerate(qos_rules["match"]): 
+                res = requests.post(QOS_REST_ENDPOINT+"/rules/"+dpid_lib.dpid_to_str(qos_rules["sw_id"]), json.dumps({
                     "match": {
                         "nw_dest": match["dst"],
                         "nw_src": match["src"]
                     },
                     "actions": {
-                        "queue": self.sliceConfigs[self.sliceName]["qos"]["queues"][index] 
+                        "queue": qos_rules["queues"][index] 
                     }
                 }))
                 self.logger.info(res)
@@ -224,10 +231,11 @@ class Controller(SimpleSwitch13):
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
                 if(port.ofport.port_no in active_ports[str(int(bridge.dpid_str['dpid']))]):
-                    port._change_status(2)        
+                    port._change_status(2) # LISTEN      
                 else:
-                    port._change_status(0)
-                        
+                    port._change_status(0) # DISABLE
+
+        self.logger.info("** restart STP **")       
         self.restart_stp()
 
     # for testing
@@ -254,30 +262,30 @@ class TopoController(ControllerBase):
         super(TopoController, self).__init__(req, link, data, **config)
         self.switch_app = data[switch_instance_name]
 
-    @route('creation_slice', url + "/sliceCreation", methods=['POST'])
+    @route('creation_slice', PERS_REST_ENDPOINT + "/sliceCreation", methods=['POST'])
     def creation_slice(self, req, **kwargs):
         self.switch_app.logger.info("\nReceived a request to create a new slice\n")
         try:
             if req.body:
                 req = req.json
             else:
-                return Response(status=400, content_type='application/json', text=json.dumps({"status": "error", "message":"Empty value."}))
+                return Response(status="400", content_type='application/json', text=json.dumps({"status": "error", "message":"Empty value."}))
         except:
-            return Response(status=400, content_type='application/json', text=json.dumps({"status": "error", "message":"Invalid format."}))
+            return Response(status="400", content_type='application/json', text=json.dumps({"status": "error", "message":"Invalid format."}))
 
         if "name" in req and req["name"] in self.switch_app.sliceConfigs:
-            return Response(status=409, content_type='application/json', text=json.dumps({"status": "error", "message":"Slice already present."}))
+            return Response(status="409", content_type='application/json', text=json.dumps({"status": "error", "message":"Slice already present."}))
         else:
             if "slice" in req:
                 self.switch_app.sliceConfigs[req["name"]] = req["slice"]
                 self.switch_app._change_slice(req["name"])
                 with open(template_file_path, "w") as template_file:
                     json.dump(self.switch_app.sliceConfigs, template_file)
-                return Response(status=200, content_type='application/json', text=json.dumps({"status": "success", "message":"Slice added and configured"}))
+                return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message":"Slice added and configured"}))
             else: 
-                return Response(status=400, content_type='application/json', text=json.dumps({"status": "error", "message":"Slice not defined."}))
+                return Response(status="400", content_type='application/json', text=json.dumps({"status": "error", "message":"Slice not defined."}))
 
-    @route('deletion_slice', url + "/sliceDeletion/{slicename}", methods=['DELETE'])
+    @route('deletion_slice', PERS_REST_ENDPOINT + "/sliceDeletion/{slicename}", methods=['DELETE'])
     def deletion_slice(self, req, slicename, **kwargs):
         self.switch_app.logger.info("\nReceived a request to delete current slice\n")
         if slicename != "default":
@@ -287,38 +295,38 @@ class TopoController(ControllerBase):
                 del self.switch_app.sliceConfigs[slicename]
                 with open(template_file_path, "w") as template_file:
                     json.dump(self.switch_app.sliceConfigs, template_file)
-                return Response(status=200, content_type='application/json', text=json.dumps({"status": "success", "message":"Slice deleted"}))
+                return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message":"Slice deleted"}))
             else:
-                return Response(status=409, content_type='application/json', text=json.dumps({"status": "error", "message":"Slice not present."}))
+                return Response(status="409", content_type='application/json', text=json.dumps({"status": "error", "message":"Slice not present."}))
         else:
-            return Response(status=409, content_type='application/json', text=json.dumps({"status": "error", "message":"Impossible to delete default slice."}))
+            return Response(status="409", content_type='application/json', text=json.dumps({"status": "error", "message":"Impossible to delete default slice."}))
 
-    @route('change_slice', url + "/slice/{slicename}", methods=['GET'])
+    @route('change_slice', PERS_REST_ENDPOINT + "/slice/{slicename}", methods=['GET'])
     def change_slice(self, req, slicename, **kwargs):
         self.switch_app.logger.info("\nReceived a request to change current slice\n")
         self.switch_app._change_slice(slicename)
 
-    @route('get_active_slice_template', url + "/activeSlice", methods=['GET'])
+    @route('get_active_slice_template', PERS_REST_ENDPOINT + "/activeSlice", methods=['GET'])
     def get_active_slice_template(self, req, **kwargs):
         self.switch_app.logger.info("\nReceived a request for the current slice\n")
-        return Response(status=200, content_type='application/json', text=json.dumps({"status": "success", "message":self.switch_app.parse_active_ports()}))
+        return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message":self.switch_app.parse_active_ports()}))
 
-    @route('get_slices', url + "/slices", methods=['GET'])
+    @route('get_slices', PERS_REST_ENDPOINT + "/slices", methods=['GET'])
     def get_slices(self, req, **kwargs):
         self.switch_app.logger.info("\nReceived a request for all slices\n")
-        return Response(status=200, content_type='application/json', text=json.dumps({"status": "success", "message":list(self.switch_app.sliceConfigs.keys())}))
+        return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message":list(self.switch_app.sliceConfigs.keys())}))
 
     # for testing
-    @route('get_ports', url + "/ports", methods=['GET'])
+    @route('get_ports', PERS_REST_ENDPOINT + "/ports", methods=['GET'])
     def get_ports(self, req, **kwargs):
         self.switch_app._get_ports()
 
     # for testing
-    @route('enable_ports', url + "/enablePorts", methods=['GET'])
+    @route('enable_ports', PERS_REST_ENDPOINT + "/enablePorts", methods=['GET'])
     def enable_ports(self, req, **kwargs):
         self.switch_app._enable_ports()
 
     # for testing
-    @route('disable_ports', url + "/disablePorts", methods=['GET'])
+    @route('disable_ports', PERS_REST_ENDPOINT + "/disablePorts", methods=['GET'])
     def disable_ports(self, req, **kwargs):
         self.switch_app._disable_ports()

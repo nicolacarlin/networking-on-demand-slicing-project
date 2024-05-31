@@ -75,7 +75,7 @@ if __name__ == "__main__":
     # Generate gratuitous ARP until STP setup is complete
     for h in net.hosts:
         h.cmd(f"arping -U -I {h.name}-eth0 $(hostname -I) > /dev/null 2>&1 &")
-        h.cmd(f"tcpdump -c 1 'arp' and not host $(hostname -I) > /dev/null 2>&1 && pkill --nslist net --ns $$ arping > /dev/null 2>&1 &")
+        h.cmd(f"tcpdump -c 1 'arp' and not host $(hostname -I) > /dev/null 2>&1 && sleep 1 && pkill --nslist net --ns $$ arping > /dev/null 2>&1 &")
         time.sleep(0.1)
 
     CLI(net)

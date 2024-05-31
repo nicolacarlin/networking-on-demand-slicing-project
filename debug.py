@@ -6,10 +6,12 @@ from ryu.cmd import manager
 
 
 def main():
-    #sys.argv.append('--ofp-tcp-listen-port')
-    #sys.argv.append('6633')
+    sys.argv.append('--ofp-tcp-listen-port')
+    sys.argv.append('6633')
     sys.argv.append('--observe-links')
-    sys.argv.append('--verbose')
+    #sys.argv.append('--verbose')
+    sys.argv.append('--wsapi-port')
+    sys.argv.append('8082')
     sys.argv.append('--enable-debugger')
     sys.argv.append('gui_topology')
     manager.main()
