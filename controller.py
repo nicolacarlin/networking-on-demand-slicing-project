@@ -16,7 +16,7 @@ switch_instance_name = 'switch_api_app'
 template_file_path = "slices/slices.json"
 
 PERS_REST_ENDPOINT = '/api/v1'
-BASE_REST_ENDPOINT = 'http://localhost:8082'
+BASE_REST_ENDPOINT = 'http://localhost:8080'
 QOS_REST_ENDPOINT = BASE_REST_ENDPOINT+'/qos'
 CONFSW_REST_ENDPOINT = BASE_REST_ENDPOINT+'/v1.0/conf/switches/'
 OVSDB_ADDR = 'tcp:127.0.0.1:6633'

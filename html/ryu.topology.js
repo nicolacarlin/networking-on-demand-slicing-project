@@ -11,6 +11,16 @@ var CONF = {
     }
 };
 
+// map of the ports, given src-dst switches returns the src port
+var port_map = {
+    "1-2": "1", "1-3": "2", "1-4": "3", "1-5": "4", "1-6": "5",
+    "2-1": "1", "2-3": "2", "2-4": "3", "2-5": "4", "2-6": "5",
+    "3-1": "1", "3-2": "2", "3-4": "3", "3-5": "4", "3-6": "5",
+    "4-1": "1", "4-2": "2", "4-3": "3", "4-5": "4", "4-6": "5",
+    "5-1": "1", "5-2": "2", "5-3": "3", "5-4": "4", "5-6": "5",
+    "6-1": "1", "6-2": "2", "6-3": "3", "6-4": "4", "6-5": "5"
+}
+
 var ws = new WebSocket("ws://" + location.host + "/v1.0/topology/ws");
 ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
@@ -299,17 +309,16 @@ function parse_active_liks(active_links, links) {
 
 function initialize_topology() {
     d3.select("svg").selectAll("*").remove();
-
-    fetch("/v1.0/topology/switches", {method: "GET"})
+    fetch("/v1.0/topology/switches", { method: "GET" })
         .then((response) => response.json()).then((switches) => {
-            
-            fetch("/v1.0/topology/hosts", {method: "GET"})
+
+            fetch("/v1.0/topology/hosts", { method: "GET" })
                 .then((response) => response.json()).then((hosts) => {
 
-                    fetch("/v1.0/topology/links", {method: "GET"})
+                    fetch("/v1.0/topology/links", { method: "GET" })
                         .then((response) => response.json()).then((links) => {
 
-                            fetch("/api/v1/activeSlice", {method: "GET"})
+                            fetch("/api/v1/activeSlice", { method: "GET" })
                                 .then((response) => response.json()).then((active_links) => {
 
                                     links = parse_active_liks(active_links["message"], links);
@@ -325,55 +334,137 @@ function initialize_topology() {
                                     }
                                     topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
                                     elem.update();
-                            });
-                    });
-            });
-    });
+                                });
+                        });
+                });
+        });
 }
-
+var existing_slices = ""
 function initialize_buttons() {
-    fetch("/api/v1/slices", {method: "GET"})
+    fetch("/api/v1/slices", { method: "GET" })
         .then((response) => response.json()).then((res) => {
-            var slices = res["message"];
+            existing_slices = res["message"];
             let slices_div = document.getElementById("slices");
-            for (var i = 0; i < slices.length; i++) {
+            for (var i = 0; i < existing_slices.length; i++) {
                 const button = document.createElement("button");
-                button.textContent = slices[i];
+                button.textContent = existing_slices[i];
                 button.className = "button";
-                button.setAttribute("id", slices[i]);
+                button.setAttribute("id", existing_slices[i]);
                 button.onclick = function () {
-                    fetch("/api/v1/slice/" + button.innerText, {method: "GET"})
-                        .then((response) => response.json()).then((res) => {
-                            if (res["status"] == "success") {
-                                current_slice = button.innerText;
-                                initialize_topology();
-                            } else {
-                                alert(res["message"])
-                            }
-                    });
+                    fetch("/api/v1/slice/" + button.innerText, { method: "GET" })
+                        .then((response) => response).then((res) => {
+                            current_slice = button.innerText;
+                            initialize_topology();
+                        });
                 }
                 slices_div.appendChild(button);
             }
-    });
+        });
 }
 
 // Object { status: "error", message: "Slice not present." }
 // Object { status: "success", message: "Slice deleted" }
 
 function delete_slice(slice_to_delete) {
-    fetch("/api/v1/sliceDeletion/" + slice_to_delete, {method: "DELETE"})
+    fetch("/api/v1/sliceDeletion/" + slice_to_delete, { method: "DELETE" })
         .then((response) => response.json()).then((res) => {
             if (res["status"] == "success") {
                 var button_to_delete = document.getElementById(slice_to_delete);
                 button_to_delete.remove();
-
-                if (current_slice == slice_to_delete){
+                var index = existing_slices.indexOf(slice_to_delete);
+                existing_slices = existing_slices.splice(index, 1);
+                if (current_slice == slice_to_delete) {
                     current_slice = "default";
                     initialize_topology();
                 }
             }
             alert(res["message"])
         });
+}
+
+function create_slice(slice_name) {
+
+    if (existing_slices.includes(slice_name)) {
+        alert("Slice already exists, please change name");
+        return;
+    }
+
+    var slice = {
+        "name": slice_name,
+        "slice": {
+            "rules": {
+                "1": { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] },
+                "2": { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] },
+                "3": { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] },
+                "4": { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] },
+                "5": { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] },
+                "6": { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] }
+            },
+            "qos": []
+        }
+    };
+    
+    for (var i = 1; i < 7; i++) {
+        for (var j = 1; j < 7; j++) {
+            if (i != j) {
+                current_checkbox = document.getElementById("check:" + i + "-" + j);
+                if (current_checkbox.checked) {
+                    slice["slice"]["rules"]["" + i][port_map[i + "-" + j]].push(6);
+                }
+            }
+        }
+    }
+
+    for (var i = 1; i < 7; i++) {
+        port_list = []
+        for (var j = 1; j < 7; j++) {
+            if (slice["slice"]["rules"]["" + i]["" + j].length != 0) {
+                port_list.push(j);
+            }
+        }
+
+        for (var k = 1; k < 7; k++) {
+            if (k == 6 || slice["slice"]["rules"]["" + i]["" + k].length != 0) {
+                slice["slice"]["rules"]["" + i]["" + k] = slice["slice"]["rules"]["" + i]["" + k]
+                    .concat(port_list.filter(function (x) { return x != k }));
+            }
+        }
+    }
+
+    fetch("/api/v1/sliceCreation", {
+        method: "POST",
+        body: JSON.stringify(slice),
+        headers: { "Content-type": "application/json; charset=UTF-8" }
+    }).then((response) => response.json()).then((res) => {
+
+        if (res["status"] == "success") {
+            let slices_div = document.getElementById("slices");
+            const button = document.createElement("button");
+            button.textContent = slice_name;
+            button.className = "button";
+            button.setAttribute("id", slice_name);
+            button.onclick = function () {
+                fetch("/api/v1/slice/" + button.innerText, { method: "GET" })
+                    .then((response) => response.json()).then((res) => {
+                        if (res["status"] == "success") {
+                            current_slice = button.innerText;
+                            initialize_topology();
+                        } else {
+                            alert(res["message"])
+                        }
+                    });
+            }
+            slices_div.appendChild(button);
+            current_slice = slice_name;
+            existing_slices.push(slice_name);
+            document.getElementById("modal").classList.remove("open");
+            initialize_topology();
+        } else {
+            alert("Something went wrong");
+            console.log(res);
+        }
+    });
+
 }
 
 function main() {
