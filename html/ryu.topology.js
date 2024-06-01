@@ -335,7 +335,6 @@ function initialize_topology() {
                                     fetch("/api/v1/activeSliceName", { method: "GET" })
                                         .then((response) => response.json()).then((res) => {
                                             current_slice = res["message"];
-                                            console.log(current_slice)
                                         });
                                     topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
                                     elem.update();
