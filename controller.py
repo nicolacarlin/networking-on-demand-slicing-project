@@ -19,7 +19,7 @@ PERS_REST_ENDPOINT = '/api/v1'
 BASE_REST_ENDPOINT = 'http://localhost:8080'
 QOS_REST_ENDPOINT = BASE_REST_ENDPOINT+'/qos'
 CONFSW_REST_ENDPOINT = BASE_REST_ENDPOINT+'/v1.0/conf/switches/'
-OVSDB_ADDR = 'tcp:127.0.0.1:6633'
+OVSDB_ADDR = '\"tcp:127.0.0.1:6632\"'
 
 class Controller(SimpleSwitch13):
 
@@ -59,6 +59,8 @@ class Controller(SimpleSwitch13):
         wsgi.register(TopoController, {switch_instance_name: self})
 
     # Add table_id=1 to manage QoS
+    # As defined in the documentation
+    # https://techhub.hpe.com/eginfolib/networking/docs/switches/5950/5200-4024_openflow_cg/content/499752685.htm
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
@@ -198,15 +200,20 @@ class Controller(SimpleSwitch13):
         # Set new QoS
         for qos_rules in self.sliceConfigs[self.sliceName]["qos"]:
             # qos_rules["sw_id"] == dpid of switch
-            res = requests.put(CONFSW_REST_ENDPOINT + dpid_lib.dpid_to_str(qos_rules["sw_id"]) + "/ovsdb_addr", data='f"{OVSDB_ADDR}"')
+            url = CONFSW_REST_ENDPOINT + dpid_lib.dpid_to_str(qos_rules["sw_id"]) + "/ovsdb_addr"
+            res = requests.put(url, data=f"{OVSDB_ADDR}")
             self.logger.info(res)
 
             time.sleep(1)
 
+            # REF: https://www.openvswitch.org/support/dist-docs/ovs-vswitchd.conf.db.5.html
             res = requests.post(QOS_REST_ENDPOINT+"/queue/"+dpid_lib.dpid_to_str(qos_rules["sw_id"]), json.dumps({
                 "port_name": qos_rules["port"],
                 "type": "linux-htb", # default type
-                "queues": [{"max_rate": queue} for queue in qos_rules["queues"]]
+                "queues": qos_rules["queues"] # max_rate and min_rate already specified
+                # "max_rate": qos_rules["queues"][0]},
+                #    *({"min_rate": qos_rules["queues"][1]} if len(qos_rules["queues"])>1 else {}) ## add only if specified
+                #]
             }))
             self.logger.info(res)
 
@@ -215,11 +222,11 @@ class Controller(SimpleSwitch13):
             for index, match in enumerate(qos_rules["match"]): 
                 res = requests.post(QOS_REST_ENDPOINT+"/rules/"+dpid_lib.dpid_to_str(qos_rules["sw_id"]), json.dumps({
                     "match": {
-                        "nw_dest": match["dst"],
+                        "nw_dst": match["dst"],
                         "nw_src": match["src"]
                     },
                     "actions": {
-                        "queue": qos_rules["queues"][index] 
+                        "queue": index # index of the already defined rule
                     }
                 }))
                 self.logger.info(res)
