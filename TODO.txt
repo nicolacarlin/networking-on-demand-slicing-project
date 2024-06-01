@@ -1,8 +1,6 @@
 QoS
 Frontend:
-    Create slice
     Add controls and alert
-    Add slice name to init topology
     Set fixed position to host
 Controller: 
     Force ping

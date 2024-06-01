@@ -311,6 +311,11 @@ class TopoController(ControllerBase):
         self.switch_app.logger.info("\nReceived a request for the current slice\n")
         return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message":self.switch_app.parse_active_ports()}))
 
+    @route('get_active_slice_name', PERS_REST_ENDPOINT + "/activeSliceName", methods=['GET'])
+    def get_active_slice_name(self, req, **kwargs):
+        self.switch_app.logger.info("\nReceived a request for the current slice name\n")
+        return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message":self.switch_app.sliceName}))
+
     @route('get_slices', PERS_REST_ENDPOINT + "/slices", methods=['GET'])
     def get_slices(self, req, **kwargs):
         self.switch_app.logger.info("\nReceived a request for all slices\n")

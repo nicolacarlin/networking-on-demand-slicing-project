@@ -332,6 +332,11 @@ function initialize_topology() {
                                         hosts_links.push(link);
                                         hosts[i].dpid = "h" + (i + 1);
                                     }
+                                    fetch("/api/v1/activeSliceName", { method: "GET" })
+                                        .then((response) => response.json()).then((res) => {
+                                            current_slice = res["message"];
+                                            console.log(current_slice)
+                                        });
                                     topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
                                     elem.update();
                                 });
@@ -361,9 +366,6 @@ function initialize_buttons() {
             }
         });
 }
-
-// Object { status: "error", message: "Slice not present." }
-// Object { status: "success", message: "Slice deleted" }
 
 function delete_slice(slice_to_delete) {
     fetch("/api/v1/sliceDeletion/" + slice_to_delete, { method: "DELETE" })
