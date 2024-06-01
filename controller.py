@@ -49,6 +49,12 @@ class Controller(SimpleSwitch13):
                     dpid_lib.str_to_dpid('0000000000000002'):
                     {'bridge': {'priority': 0x8000, 'fwd_delay': 8}},
                     dpid_lib.str_to_dpid('0000000000000003'):
+                    {'bridge': {'priority': 0x8000, 'fwd_delay': 8}},
+                    dpid_lib.str_to_dpid('0000000000000004'):
+                    {'bridge': {'priority': 0x8000, 'fwd_delay': 8}},
+                    dpid_lib.str_to_dpid('0000000000000005'):
+                    {'bridge': {'priority': 0x8000, 'fwd_delay': 8}},
+                    dpid_lib.str_to_dpid('0000000000000006'):
                     {'bridge': {'priority': 0x8000, 'fwd_delay': 8}}}
 
 
@@ -211,6 +217,7 @@ class Controller(SimpleSwitch13):
                 "port_name": qos_rules["port"],
                 "type": "linux-htb", # default type
                 "queues": qos_rules["queues"] # max_rate and min_rate already specified
+                # idx = 0 is the default one
                 # "max_rate": qos_rules["queues"][0]},
                 #    *({"min_rate": qos_rules["queues"][1]} if len(qos_rules["queues"])>1 else {}) ## add only if specified
                 #]
