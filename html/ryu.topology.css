@@ -11,8 +11,8 @@
 }
 
 .disabledLink {
-    stroke: #090909;
-    stroke-opacity: .6;
+    stroke: rgba(114, 114, 114, 0.9);
+    stroke-opacity: .2;
     stroke-width: 2px;
 }
 

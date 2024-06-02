@@ -11,6 +11,21 @@ var CONF = {
     }
 };
 
+var positions = {
+    "0000000000000001" : {"x" : "450", "y" : "200"},
+    "0000000000000002" : {"x" : "250", "y" : "300"},
+    "0000000000000003" : {"x" : "650", "y" : "300"},
+    "0000000000000004" : {"x" : "250", "y" : "500"},
+    "0000000000000005" : {"x" : "650", "y" : "500"},
+    "0000000000000006" : {"x" : "450", "y" : "600"},
+    "h1" : {"x" : "450", "y" : "50"},
+    "h2" : {"x" : "100", "y" : "300"},
+    "h3" : {"x" : "800", "y" : "300"},
+    "h4" : {"x" : "100", "y" : "500"},
+    "h5" : {"x" : "800", "y" : "500"},
+    "h6" : {"x" : "450", "y" : "750"}
+}
+
 // map of the ports, given src-dst switches returns the src port
 var port_map = {
     "1-2": "1", "1-3": "2", "1-4": "3", "1-5": "4", "1-6": "5",
@@ -50,6 +65,7 @@ var elem = {
         .on("tick", _tick),
     svg: d3.select("body").append("svg")
         .attr("id", "topology")
+        .attr("preserveAspectRatio", "xMinYMin meet")
         .attr("width", CONF.force.width)
         .attr("height", CONF.force.height),
     console: d3.select("body").append("div")
@@ -58,12 +74,12 @@ var elem = {
 };
 
 function _tick() {
-    elem.link.attr("x1", function (d) { return d.source.x; })
-        .attr("y1", function (d) { return d.source.y; })
-        .attr("x2", function (d) { return d.target.x; })
-        .attr("y2", function (d) { return d.target.y; });
+    elem.link.attr("x1", function (d) { return positions[d.source.dpid].x; })
+        .attr("y1", function (d) { return positions[d.source.dpid].y; })
+        .attr("x2", function (d) { return positions[d.target.dpid].x; })
+        .attr("y2", function (d) { return positions[d.target.dpid].y; });
 
-    elem.node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+    elem.node.attr("transform", function (d) { return "translate(" + positions[d.dpid].x + "," + positions[d.dpid].y + ")"; });
 
     elem.port.attr("transform", function (d) {
         var p = topo.get_port_point(d);
@@ -103,20 +119,24 @@ elem.update = function () {
     this.node.exit().remove();
     var nodeEnter = this.node.enter().append("g")
         .attr("class", "node")
+        //.attr("transform", function(d) { return "translate(-100, -100)" })
         .on("dblclick", function (d) { d3.select(this).classed("fixed", d.fixed = false); })
         .call(this.drag);
+
     nodeEnter.filter(function (d) { return d.dpid.startsWith("h"); }).append("image")
         .attr("xlink:href", "./images/host.svg")
         .attr("x", -CONF.image.width / 2)
         .attr("y", -CONF.image.height / 2)
         .attr("width", CONF.image.width)
         .attr("height", CONF.image.height);
+
     nodeEnter.filter(function (d) { return !d.dpid.startsWith("h"); }).append("image")
         .attr("xlink:href", "./images/switch.svg")
         .attr("x", -CONF.image.width / 2)
         .attr("y", -CONF.image.height / 2)
         .attr("width", CONF.image.width)
         .attr("height", CONF.image.height);
+
     nodeEnter.append("text")
         .attr("dx", -CONF.image.width / 2)
         .attr("dy", CONF.image.height - 10)
@@ -160,9 +180,6 @@ var topo = {
     },
     add_links: function (links) {
         for (var i = 0; i < links.length; i++) {
-            //if (!is_valid_link(links[i])) continue;
-            //console.log("add link: " + JSON.stringify(links[i]));
-
             var src_dpid = links[i].src.dpid;
             var dst_dpid = links[i].dst.dpid;
             var src_index = this.node_index[src_dpid];
@@ -237,10 +254,10 @@ var topo = {
         var weight = 0.88;
 
         var link = this.links[d.link_idx];
-        var x1 = link.source.x;
-        var y1 = link.source.y;
-        var x2 = link.target.x;
-        var y2 = link.target.y;
+        var x1 = positions[link.source.dpid].x;
+        var y1 = positions[link.source.dpid].y;
+        var x2 = positions[link.target.dpid].x;
+        var y2 = positions[link.target.dpid].y;
 
         if (d.link_dir == "target") weight = 1.0 - weight;
 
