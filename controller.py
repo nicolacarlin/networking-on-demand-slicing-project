@@ -319,6 +319,7 @@ class TopoController(ControllerBase):
     def change_slice(self, req, slicename, **kwargs):
         self.switch_app.logger.info("\nReceived a request to change current slice\n")
         self.switch_app._change_slice(slicename)
+        return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message": "slice activated"}))
 
     @route('get_active_slice_template', PERS_REST_ENDPOINT + "/activeSlice", methods=['GET'])
     def get_active_slice_template(self, req, **kwargs):

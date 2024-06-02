@@ -19,7 +19,10 @@ var port_map = {
     "4-1": "1", "4-2": "2", "4-3": "3", "4-5": "4", "4-6": "5",
     "5-1": "1", "5-2": "2", "5-3": "3", "5-4": "4", "5-6": "5",
     "6-1": "1", "6-2": "2", "6-3": "3", "6-4": "4", "6-5": "5"
-}
+};
+
+var existing_slices = [];
+var current_slice = "default";
 
 var ws = new WebSocket("ws://" + location.host + "/v1.0/topology/ws");
 ws.onmessage = function (event) {
@@ -39,8 +42,6 @@ function dpid_to_int(dpid) {
     return Number("0x" + dpid);
 }
 
-var current_slice = "default";
-
 var elem = {
     force: d3.layout.force()
         .size([CONF.force.width, CONF.force.height])
@@ -55,6 +56,7 @@ var elem = {
         .attr("id", "console")
         .attr("width", CONF.force.width)
 };
+
 function _tick() {
     elem.link.attr("x1", function (d) { return d.source.x; })
         .attr("y1", function (d) { return d.source.y; })
@@ -68,6 +70,7 @@ function _tick() {
         return "translate(" + p.x + "," + p.y + ")";
     });
 }
+
 elem.drag = elem.force.drag().on("dragstart", _dragstart);
 function _dragstart(d) {
     var dpid = dpid_to_int(d.dpid)
@@ -178,8 +181,6 @@ var topo = {
     },
     delete_nodes: function (nodes) {
         for (var i = 0; i < nodes.length; i++) {
-            //console.log("delete switch: " + JSON.stringify(nodes[i]));
-
             node_index = this.get_node_index(nodes[i]);
             this.nodes.splice(node_index, 1);
         }
@@ -188,8 +189,6 @@ var topo = {
     delete_links: function (links) {
         for (var i = 0; i < links.length; i++) {
             if (!is_valid_link(links[i])) continue;
-            //console.log("delete link: " + JSON.stringify(links[i]));
-
             link_index = this.get_link_index(links[i]);
             this.links.splice(link_index, 1);
         }
@@ -308,6 +307,7 @@ function parse_active_liks(active_links, links) {
 }
 
 function initialize_topology() {
+    // Clear canvas before setting the slice image
     d3.select("svg").selectAll("*").remove();
     fetch("/v1.0/topology/switches", { method: "GET" })
         .then((response) => response.json()).then((switches) => {
@@ -321,51 +321,81 @@ function initialize_topology() {
                             fetch("/api/v1/activeSlice", { method: "GET" })
                                 .then((response) => response.json()).then((active_links) => {
 
-                                    links = parse_active_liks(active_links["message"], links);
-                                    hosts_links = []
-                                    //Sort hosts and switches to replicate connection
-                                    hosts.sort((a, b) => a.mac > b.mac);
-                                    switches.sort((a, b) => a.dpid > b.dpid);
-
-                                    for (var i = 0; i < hosts.length; i++) {
-                                        link = { src: { dpid: "h" + (i + 1), hw_addr: hosts[i].mac, name: "h" + (i + 1) + "-s" + (i + 1), port_no: "00000001" }, dst: { dpid: switches[i].dpid, hw_addr: switches[i].ports[0].hw_addr, name: switches[i].ports[0].name, port_no: switches[i].ports[0].port_no } }
-                                        hosts_links.push(link);
-                                        hosts[i].dpid = "h" + (i + 1);
+                                    if (active_links["status"] == "success") {
+                                        // Set status to links to replicate the slice
+                                        links = parse_active_liks(active_links["message"], links);
+                                        hosts_links = []
+                                        // Sort host and switches
+                                        hosts.sort((a, b) => a.mac > b.mac);
+                                        switches.sort((a, b) => a.dpid > b.dpid);
+                                        // Add host links
+                                        for (var i = 0; i < hosts.length; i++) {
+                                            let link = {
+                                                src: {
+                                                    dpid: "h" + (i + 1),
+                                                    hw_addr: hosts[i].mac,
+                                                    name: "h" + (i + 1) + "-s" + (i + 1),
+                                                    port_no: "00000001"
+                                                },
+                                                dst: {
+                                                    dpid: switches[i].dpid,
+                                                    hw_addr: switches[i].ports[0].hw_addr,
+                                                    name: switches[i].ports[0].name,
+                                                    port_no: switches[i].ports[0].port_no
+                                                }
+                                            }
+                                            hosts_links.push(link);
+                                            hosts[i].dpid = "h" + (i + 1);
+                                        }
+                                        // Set slice name
+                                        fetch("/api/v1/activeSliceName", { method: "GET" })
+                                            .then((response) => response.json()).then((res) => {
+                                                if (res["status"] == "success") {
+                                                    current_slice = res["message"];
+                                                } else {
+                                                    alert("Impossible to set slice name, please refresh the page");
+                                                }
+                                            });
+                                        // Initialize topology and create image in canvas
+                                        topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
+                                        elem.update();
+                                    } else {
+                                        alert("Something went wrong, please refresh the page");
                                     }
-                                    fetch("/api/v1/activeSliceName", { method: "GET" })
-                                        .then((response) => response.json()).then((res) => {
-                                            current_slice = res["message"];
-                                        });
-                                    topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
-                                    elem.update();
                                 });
                         });
                 });
         });
 }
-var existing_slices = ""
+
+// Create slice buttons dinamically
 function initialize_buttons() {
     fetch("/api/v1/slices", { method: "GET" })
         .then((response) => response.json()).then((res) => {
-            existing_slices = res["message"];
-            let slices_div = document.getElementById("slices");
-            for (var i = 0; i < existing_slices.length; i++) {
-                const button = document.createElement("button");
-                button.textContent = existing_slices[i];
-                button.className = "button";
-                button.setAttribute("id", existing_slices[i]);
-                button.onclick = function () {
-                    fetch("/api/v1/slice/" + button.innerText, { method: "GET" })
-                        .then((response) => response).then((res) => {
-                            current_slice = button.innerText;
-                            initialize_topology();
-                        });
+            if (res["status"] == "success") {
+                existing_slices = res["message"];
+                let slices_div = document.getElementById("slices");
+                // For each slice in the slices.json file create a button
+                for (var i = 0; i < existing_slices.length; i++) {
+                    const button = document.createElement("button");
+                    button.textContent = existing_slices[i];
+                    button.className = "button";
+                    button.setAttribute("id", existing_slices[i]);
+                    // Set onclick function to change slice
+                    button.onclick = function () {
+                        fetch("/api/v1/slice/" + button.innerText, { method: "GET" })
+                            .then((response) => response).then((res) => {
+                                current_slice = button.innerText;
+                                initialize_topology();
+                            });
+                    }
+                    slices_div.appendChild(button);
                 }
-                slices_div.appendChild(button);
             }
         });
 }
 
+// Delete a slice and the relative button
 function delete_slice(slice_to_delete) {
     fetch("/api/v1/sliceDeletion/" + slice_to_delete, { method: "DELETE" })
         .then((response) => response.json()).then((res) => {
@@ -374,22 +404,26 @@ function delete_slice(slice_to_delete) {
                 button_to_delete.remove();
                 var index = existing_slices.indexOf(slice_to_delete);
                 existing_slices = existing_slices.splice(index, 1);
+                // If the delete slice is the selected one, reset to default
                 if (current_slice == slice_to_delete) {
                     current_slice = "default";
                     initialize_topology();
                 }
+            } else {
+                alert(res["message"])
             }
-            alert(res["message"])
         });
 }
 
+// Create a new slice and set it as selected
 function create_slice(slice_name) {
 
     if (existing_slices.includes(slice_name)) {
-        alert("Slice already exists, please change name");
+        alert("Slice name already exists, please change name");
         return;
     }
 
+    // Empty slice format
     var slice = {
         "name": slice_name,
         "slice": {
@@ -404,7 +438,8 @@ function create_slice(slice_name) {
             "qos": []
         }
     };
-    
+
+    // For each checked checkbox insert 6 in the corresponding port array (forward to host)
     for (var i = 1; i < 7; i++) {
         for (var j = 1; j < 7; j++) {
             if (i != j) {
@@ -416,6 +451,7 @@ function create_slice(slice_name) {
         }
     }
 
+    // For each port and its array if it contains something (6) save that port in the array
     for (var i = 1; i < 7; i++) {
         port_list = []
         for (var j = 1; j < 7; j++) {
@@ -424,6 +460,7 @@ function create_slice(slice_name) {
             }
         }
 
+        // Again, for each port set all the ports except for it self to avoid forwarding the message to the sender
         for (var k = 1; k < 7; k++) {
             if (k == 6 || slice["slice"]["rules"]["" + i]["" + k].length != 0) {
                 slice["slice"]["rules"]["" + i]["" + k] = slice["slice"]["rules"]["" + i]["" + k]
@@ -432,6 +469,9 @@ function create_slice(slice_name) {
         }
     }
 
+    console.log(slice);
+
+    // Call to create the slice
     fetch("/api/v1/sliceCreation", {
         method: "POST",
         body: JSON.stringify(slice),
@@ -439,22 +479,21 @@ function create_slice(slice_name) {
     }).then((response) => response.json()).then((res) => {
 
         if (res["status"] == "success") {
+            // Create new button
             let slices_div = document.getElementById("slices");
             const button = document.createElement("button");
             button.textContent = slice_name;
             button.className = "button";
             button.setAttribute("id", slice_name);
+            // Set onclick function to change slice
             button.onclick = function () {
                 fetch("/api/v1/slice/" + button.innerText, { method: "GET" })
-                    .then((response) => response.json()).then((res) => {
-                        if (res["status"] == "success") {
-                            current_slice = button.innerText;
-                            initialize_topology();
-                        } else {
-                            alert(res["message"])
-                        }
+                    .then((response) => response).then((res) => {
+                        current_slice = button.innerText;
+                        initialize_topology();
                     });
             }
+            // Set new current slice, save it, close the prompt and refresh the canvas
             slices_div.appendChild(button);
             current_slice = slice_name;
             existing_slices.push(slice_name);
@@ -462,7 +501,6 @@ function create_slice(slice_name) {
             initialize_topology();
         } else {
             alert("Something went wrong");
-            console.log(res);
         }
     });
 

@@ -27,15 +27,11 @@ $ PYTHONPATH=. ./bin/ryu run \
 """
 
 import os
-
 from webob.static import DirectoryApp
-
 from ryu.app.wsgi import ControllerBase, WSGIApplication, route
 from ryu.base import app_manager
 
-
 PATH = os.path.dirname(__file__)
-
 
 # Serving static files
 class GUIServerApp(app_manager.RyuApp):
