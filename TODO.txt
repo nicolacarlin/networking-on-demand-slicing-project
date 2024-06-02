@@ -1,7 +1,4 @@
 QoS
-Set fixed position to host
-
-
 
 
 needed:
