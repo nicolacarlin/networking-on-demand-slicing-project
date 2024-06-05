@@ -45,17 +45,17 @@ class Controller(SimpleSwitch13):
 
         config = {
                     dpid_lib.str_to_dpid('0000000000000001'): {
-                    'bridge': {'priority': 0x8000, 'fwd_delay': 3}},                                 
+                    'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},                                 
                     dpid_lib.str_to_dpid('0000000000000002'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000,'max_age':90, 'fwd_delay': 3}},
                     dpid_lib.str_to_dpid('0000000000000003'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},
                     dpid_lib.str_to_dpid('0000000000000004'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},
                     dpid_lib.str_to_dpid('0000000000000005'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},
                     dpid_lib.str_to_dpid('0000000000000006'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}}}
+                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}}}
 
 
         # Register the STP configuration
@@ -128,7 +128,7 @@ class Controller(SimpleSwitch13):
             else:
                 # Flood the packet to all possible ports (based on the slice restrictions)
                 out_port = self.sliceToPort["rules"][str(dpid)][str(in_port)]
-                self.logger.info("Destination unknown: switch: %s, flooding on ports: %s", dpid, out_port)
+                #self.logger.info("Destination unknown: switch: %s, flooding on ports: %s", dpid, out_port)
 
             # Create the actions list: send the packet to each port in out_port
             actions = [parser.OFPActionOutput(int(out)) for out in out_port]
@@ -170,7 +170,7 @@ class Controller(SimpleSwitch13):
                           dpid_str, ev.port_no, of_state[ev.port_state])
 
     def restart_stp(self):
-        for bridge in self.stp.bridge_list.values():
+        for bridge in self.stp.bridge_list.values():            
             try:
                 bridge.recalculate_spanning_tree()
             except AttributeError:
@@ -201,7 +201,7 @@ class Controller(SimpleSwitch13):
 
         self.sliceName = slicename
         self.sliceToPort = self.sliceConfigs[self.sliceName]
-        self.mac_to_port = {}
+        #self.mac_to_port = {}
 
         # Set new QoS
         for qos_rules in self.sliceConfigs[self.sliceName]["qos"]:
@@ -246,21 +246,28 @@ class Controller(SimpleSwitch13):
             for port in bridge.ports.values():
                 if(port.ofport.port_no in active_ports[str(int(bridge.dpid_str['dpid']))]): 
                     p = self.dpset.get_port(int(bridge.dpid_str['dpid']), port.ofport.port_no)
-                    self.logger.info(f"PORT UP: {p}")
-                    bridge.link_up(p)  
+                    if(port.state == 0):
+                        self.logger.info(f"PORT UP: {p}")
+                        bridge.link_up(p)
+                    
 
         time.sleep(3)
+
+        stp_restart_required = True
 
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
                 if(port.ofport.port_no not in active_ports[str(int(bridge.dpid_str['dpid']))]): 
                     p = self.dpset.get_port(int(bridge.dpid_str['dpid']), port.ofport.port_no)
-                    self.logger.info(f"PORT DOWN: {p}")
-                    bridge.link_down(p)
+                    if(port.state != 0):
+                        if(port.role == 1):
+                            stp_restart_required = False
+                        self.logger.info(f"PORT DOWN: {p}")
+                        bridge.link_down(p)
 
-        time.sleep(30)
-        self.logger.info("\n\nRESTART\n\n")
-        self.restart_stp()
+        if(stp_restart_required):
+            self.logger.info("\n\nRESTART\n\n")
+            self.restart_stp()
 
     # for testing
     def _get_ports(self): 
