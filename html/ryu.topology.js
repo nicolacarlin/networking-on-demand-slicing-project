@@ -142,17 +142,17 @@ elem.update = function () {
         .attr("dy", CONF.image.height - 10)
         .text(function (d) { return "dpid: " + trim_zero(d.dpid); });
 
-    var ports = topo.get_ports();
-    this.port.remove();
-    this.port = this.svg.selectAll(".port").data(ports);
-    var portEnter = this.port.enter().append("g")
-        .attr("class", "port");
-    portEnter.append("circle")
-        .attr("r", 8);
-    portEnter.append("text")
-        .attr("dx", -3)
-        .attr("dy", 3)
-        .text(function (d) { return trim_zero(d.port_no); });
+    // var ports = topo.get_ports();
+    // this.port.remove();
+    // this.port = this.svg.selectAll(".port").data(ports);
+    // var portEnter = this.port.enter().append("g")
+    //     .attr("class", "port");
+    // portEnter.append("circle")
+    //     .attr("r", 8);
+    // portEnter.append("text")
+    //     .attr("dx", -3)
+    //     .attr("dy", 3)
+    //     .text(function (d) { return trim_zero(d.port_no); });
 };
 
 function is_valid_link(link) {

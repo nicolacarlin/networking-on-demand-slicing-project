@@ -19,7 +19,7 @@
 .activeLink {
     stroke: #68d420;
     stroke-opacity: .6;
-    stroke-width: 2px;
+    stroke-width: 3px;
 }
 
 .port circle {
