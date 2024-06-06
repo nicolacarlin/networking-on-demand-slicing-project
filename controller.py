@@ -46,17 +46,17 @@ class Controller(SimpleSwitch13):
 
         config = {
                     dpid_lib.str_to_dpid('0000000000000001'): {
-                    'bridge': {'priority': 0x8000, 'fwd_delay': 3}},                                 
+                    'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},                                 
                     dpid_lib.str_to_dpid('0000000000000002'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000,'max_age':90, 'fwd_delay': 3}},
                     dpid_lib.str_to_dpid('0000000000000003'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},
                     dpid_lib.str_to_dpid('0000000000000004'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},
                     dpid_lib.str_to_dpid('0000000000000005'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},
                     dpid_lib.str_to_dpid('0000000000000006'):
-                    {'bridge': {'priority': 0x8000, 'fwd_delay': 3}}}
+                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}}}
 
 
         # Register the STP configuration
@@ -202,7 +202,7 @@ class Controller(SimpleSwitch13):
         self.add_flow(datapath, 0, match, actions)
         
     def restart_stp(self):
-        for bridge in self.stp.bridge_list.values():
+        for bridge in self.stp.bridge_list.values():            
             try:
                 bridge.recalculate_spanning_tree()
             except AttributeError:
@@ -233,7 +233,7 @@ class Controller(SimpleSwitch13):
 
         self.sliceName = slicename
         self.sliceToPort = self.sliceConfigs[self.sliceName]
-        self.mac_to_port = {}
+        #self.mac_to_port = {}
 
         # Set new QoS
         for qos_rules in self.sliceConfigs[self.sliceName]["qos"]:
@@ -276,19 +276,36 @@ class Controller(SimpleSwitch13):
 
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
-                if(port.ofport.port_no in active_ports[str(int(bridge.dpid_str['dpid']))]):
-                    port._change_status(2) # LISTEN      
-                else:
-                    port._change_status(0) # DISABLE
+                if(port.ofport.port_no in active_ports[str(int(bridge.dpid_str['dpid']))]): 
+                    p = self.dpset.get_port(int(bridge.dpid_str['dpid']), port.ofport.port_no)
+                    if(port.state == 0):
+                        self.logger.info(f"PORT UP: {p}")
+                        bridge.link_up(p)
+                    
 
-        self.logger.info("** restart STP **")       
-        self.restart_stp()
+        time.sleep(3)
+
+        stp_restart_required = True
+
+        for bridge in self.stp.bridge_list.values():
+            for port in bridge.ports.values():
+                if(port.ofport.port_no not in active_ports[str(int(bridge.dpid_str['dpid']))]): 
+                    p = self.dpset.get_port(int(bridge.dpid_str['dpid']), port.ofport.port_no)
+                    if(port.state != 0):
+                        if(port.role == 1):
+                            stp_restart_required = False
+                        self.logger.info(f"PORT DOWN: {p}")
+                        bridge.link_down(p)
+
+        if(stp_restart_required):
+            self.logger.info("\n\nRESTART\n\n")
+            self.restart_stp()
 
     # for testing
     def _get_ports(self): 
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
-                self.logger.info(f"Switch: {bridge.dpid_str} -> Port: {port.ofport.port_no} -> Status: {port.state}")          
+                self.logger.info(f"Switch: {bridge.dpid_str['dpid']} -> Port: {port.ofport.port_no} -> Status: {port.state}")          
 
     # for testing
     def _enable_ports(self): 
@@ -300,7 +317,8 @@ class Controller(SimpleSwitch13):
     def _disable_ports(self): 
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
-                port._change_status(0)
+                self.logger.info("** Disabled**") 
+                #port._change_status(0)
 
 class TopoController(ControllerBase):
     def __init__(self, req, link, data, **config):

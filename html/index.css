@@ -31,6 +31,13 @@
     font-weight: bold;
 }
 
+.select {
+    width: 60px;
+    height: 30px;
+    margin-left: 3px;
+    margin-right: 7px;
+}
+
 .modal {
     background-color: rgba(0, 0, 0, 0.3);
     opacity: 0;
@@ -56,11 +63,10 @@
     background-color: #fff;
     border-radius: 5px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    padding: 15px 25px;
+    padding: 10px;
     text-align: center;
-    width: 1500px;
-    height: 600px;
-    margin: 20px;
+    width: 1600px;
+    height: 800px;
 }
 
 .container {
@@ -75,21 +81,28 @@
     text-align: center;
     align-items: center;
     justify-content: center;
-    padding: 10px;
-    margin: 15px;
+    font-size: small;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 15px;
     border-right: 1px solid #000000;
+    margin-bottom: 20px;
 }
 
 .inner-container-no-border {
     text-align: center;
     align-items: center;
     justify-content: center;
-    padding: 10px;
-    margin: 15px;
+    font-size: small;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    margin-bottom: 20px;
 }
 
-
 .checkbox {
-    margin-left: 20px;
+    margin-left: 40px;
 }
 

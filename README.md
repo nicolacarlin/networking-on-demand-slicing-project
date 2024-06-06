@@ -25,6 +25,7 @@ cd networking-on-demand-slicing-project
 Open up two terminals and run:
 
 ```
+sudo ovs-vsctl set-manager ptcp:6632
 ryu run --observe-links gui_topology.py
 ```
 on the first terminal and:
