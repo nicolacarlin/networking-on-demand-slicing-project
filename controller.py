@@ -182,24 +182,6 @@ class Controller(SimpleSwitch13):
                     stplib.PORT_STATE_FORWARD: 'FORWARD'}
         self.logger.debug("[dpid=%s][port=%d] state=%s",
                           dpid_str, ev.port_no, of_state[ev.port_state])
-
-    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-    def switch_features_handler(self, ev):
-        datapath = ev.msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        # install table-miss flow entry
-        #
-        # We specify NO BUFFER to max_len of the output action due to
-        # OVS bug. At this moment, if we specify a lesser number, e.g.,
-        # 128, OVS will send Packet-In with invalid buffer_id and
-        # truncated packet data. In that case, we cannot output packets
-        # correctly.  The bug has been fixed in OVS v2.1.0.
-        match = parser.OFPMatch()
-        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
-                                          ofproto.OFPCML_NO_BUFFER)]
-        self.add_flow(datapath, 0, match, actions)
         
     def restart_stp(self):
         for bridge in self.stp.bridge_list.values():            
@@ -249,10 +231,7 @@ class Controller(SimpleSwitch13):
                 "port_name": qos_rules["port"],
                 "type": "linux-htb", # default type
                 "queues": qos_rules["queues"] # max_rate and min_rate already specified
-                # idx = 0 is the default one
-                # "max_rate": qos_rules["queues"][0]},
-                #    *({"min_rate": qos_rules["queues"][1]} if len(qos_rules["queues"])>1 else {}) ## add only if specified
-                #]
+                # idx = 0 is the default one of the port specified
             }))
             self.logger.info(res)
 
@@ -265,7 +244,7 @@ class Controller(SimpleSwitch13):
                         "nw_src": match["src"]
                     },
                     "actions": {
-                        "queue": index # index of the already defined rule
+                        "queue": index +1 # index of the already defined rule excluding the default one
                     }
                 }))
                 self.logger.info(res)
@@ -318,7 +297,7 @@ class Controller(SimpleSwitch13):
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
                 self.logger.info("** Disabled**") 
-                #port._change_status(0)
+                port._change_status(0)
 
 class TopoController(ControllerBase):
     def __init__(self, req, link, data, **config):
