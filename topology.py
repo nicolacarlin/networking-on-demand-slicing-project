@@ -3,9 +3,8 @@
 
 from mininet.topo import Topo
 from mininet.net import Mininet
-from mininet.node import OVSKernelSwitch, RemoteController, OVSSwitch
+from mininet.node import RemoteController, OVSSwitch
 from mininet.cli import CLI
-from mininet.link import TCLink
 
 import time
 
@@ -25,8 +24,9 @@ class NetworkPhysicalTopo(Topo):
 
         # Create switch nodes
         for i in range(1,7):
-            sconfig = {"dpid": "%016x" % (i)}
-            switches.append(self.addSwitch("s%d" % (i), **sconfig))
+            dpid = "%016x" % (i)
+            opts = dict(protocols='OpenFlow13')
+            switches.append(self.addSwitch("s%d" % (i), dpid=dpid, opts=opts))
             
         # Create host nodes
         for i in range(1,7):
@@ -42,9 +42,6 @@ class NetworkPhysicalTopo(Topo):
             self.addLink(hosts[i], switches[i], **host_link_config)
        
 
-
-topos = {"networkphysicaltopo": (lambda: NetworkPhysicalTopo())}
-
 if __name__ == "__main__":
     topo = NetworkPhysicalTopo()
     net = Mininet(
@@ -52,8 +49,7 @@ if __name__ == "__main__":
         switch=OVSSwitch,
         build=False,
         autoSetMacs=True,
-        autoStaticArp=True,
-        link=TCLink,
+        autoStaticArp=True
     )
     controller = RemoteController("c1", ip="127.0.0.1", port=6633)
     net.addController(controller)
