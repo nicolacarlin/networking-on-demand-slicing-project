@@ -88,14 +88,48 @@ function _tick() {
     });
 }
 
+// when clicking on a switch the qos is returned and printed
 elem.drag = elem.force.drag().on("dragstart", _dragstart);
 function _dragstart(d) {
-    var dpid = dpid_to_int(d.dpid)
-    d3.json("/stats/flow/" + dpid, function (e, data) {
-        flows = data[dpid];
-        elem.console.selectAll("ul").remove();
-    });
-    d3.select(this).classed("fixed", d.fixed = true);
+    var output = "";
+    fetch("/qos/rules/" + d.dpid, { method: "GET" })
+        .then((response) => response.json()).then((rules) => {
+            var rules = rules[0]["command_result"][0]["qos"];
+
+            fetch("/qos/queue/" + d.dpid, { method: "GET" })
+                .then((response) => response.json()).then((queues) => {
+                    for (var i = 0; i < rules.length; i++) {
+                        if ("nw_src" in rules[i]) {
+                            var src = rules[i]["nw_src"];
+                            var dst = rules[i]["nw_dst"];
+                            var actions = rules[i]["actions"];
+
+                            output += "From h" + src.split(".")[3] + " to h" + dst.split(".")[3] + "\n";
+
+                            for (var j = 0; j < actions.length; j++) {
+                                if ("queue" in actions[j]) {
+                                    var action = String(Number(actions[j]["queue"]) - 1);
+
+                                    var config = queues[0]["command_result"]["details"]["s" + dpid_to_int(d.dpid) + "-eth6"][action]["config"];
+                                    if ("max-rate" in config) {
+                                        output += "Max rate: " + config["max-rate"] + "\n";
+                                    }
+                                    if ("min-rate" in config) {
+                                        output += "Min rate: " + config["min-rate"] + "\n";
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    document.getElementById("qosResults").innerText = output;
+                });
+        });
+    // d3.json("/stats/flow/" + dpid, function (e, data) {
+    //     flows = data[dpid];
+    //     elem.console.selectAll("ul").remove();
+    // });
+    //d3.select(this).classed("fixed", d.fixed = true);
 }
 
 elem.node = elem.svg.selectAll(".node");
@@ -120,7 +154,7 @@ elem.update = function () {
     this.node.exit().remove();
     var nodeEnter = this.node.enter().append("g")
         .attr("class", "node")
-        .on("dblclick", function (d) { d3.select(this).classed("fixed", d.fixed = false); })
+        .on("dblclick", function (d) { console.log(d); })
         .call(this.drag);
 
     nodeEnter.filter(function (d) { return d.dpid.startsWith("h"); }).append("image")
@@ -365,7 +399,7 @@ function initialize_topology() {
                                             hosts[i].dpid = "h" + (i + 1);
                                         }
                                         current_slice = active_links["message"]["slice_name"];
-                                        document.getElementById("sliceName").innerText = current_slice;
+                                        document.getElementById("sliceName").innerText = "Current slice: " + current_slice;
                                         // Initialize topology and create image in canvas
                                         topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
                                         elem.update();

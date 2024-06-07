@@ -1,15 +1,19 @@
-#index {  
-    border: 1px solid #000000;  
+#index {
+    border: 1px solid #000000;
 }
 
 .menu {
     position: absolute;
-    top: 83px;
+    top: 123px;
     right: 20px;
     width: 700px;
     height: 800px;
     border: 1px solid #000000;
     text-align: center;
+}
+
+.subMenu {
+    padding-bottom: 200px;
 }
 
 .button {
@@ -105,4 +109,3 @@
 .checkbox {
     margin-left: 40px;
 }
-
