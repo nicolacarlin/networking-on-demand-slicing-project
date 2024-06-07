@@ -11,19 +11,20 @@ var CONF = {
     }
 };
 
+// element positions inside the canvas
 var positions = {
-    "0000000000000001" : {"x" : "450", "y" : "200"},
-    "0000000000000002" : {"x" : "250", "y" : "300"},
-    "0000000000000003" : {"x" : "650", "y" : "300"},
-    "0000000000000004" : {"x" : "250", "y" : "500"},
-    "0000000000000005" : {"x" : "650", "y" : "500"},
-    "0000000000000006" : {"x" : "450", "y" : "600"},
-    "h1" : {"x" : "450", "y" : "50"},
-    "h2" : {"x" : "100", "y" : "300"},
-    "h3" : {"x" : "800", "y" : "300"},
-    "h4" : {"x" : "100", "y" : "500"},
-    "h5" : {"x" : "800", "y" : "500"},
-    "h6" : {"x" : "450", "y" : "750"}
+    "0000000000000001": { "x": "450", "y": "200" },
+    "0000000000000002": { "x": "250", "y": "300" },
+    "0000000000000003": { "x": "650", "y": "300" },
+    "0000000000000004": { "x": "250", "y": "500" },
+    "0000000000000005": { "x": "650", "y": "500" },
+    "0000000000000006": { "x": "450", "y": "600" },
+    "h1": { "x": "450", "y": "50" },
+    "h2": { "x": "100", "y": "300" },
+    "h3": { "x": "800", "y": "300" },
+    "h4": { "x": "100", "y": "500" },
+    "h5": { "x": "800", "y": "500" },
+    "h6": { "x": "450", "y": "750" }
 }
 
 // map of the ports, given src-dst switches returns the src port
@@ -119,7 +120,6 @@ elem.update = function () {
     this.node.exit().remove();
     var nodeEnter = this.node.enter().append("g")
         .attr("class", "node")
-        //.attr("transform", function(d) { return "translate(-100, -100)" })
         .on("dblclick", function (d) { d3.select(this).classed("fixed", d.fixed = false); })
         .call(this.drag);
 
@@ -305,6 +305,8 @@ var rpc = {
     },
 }
 
+// function to set the status value to links
+// active links are displayed as green and disabled ones as grey
 function parse_active_liks(active_links, links) {
     for (var i = 0; i < links.length; i++) {
         var src_switch = parseInt(links[i]["src"]["dpid"]);
@@ -312,35 +314,33 @@ function parse_active_liks(active_links, links) {
         var dst_switch = parseInt(links[i]["dst"]["dpid"]);
         var dst_port = parseInt(links[i]["dst"]["port_no"]);
 
-        if (active_links[src_switch].includes(src_port) && active_links[dst_switch].includes(dst_port)) {
-            links[i]["Status"] = 1;
-        } else {
-            links[i]["Status"] = 0;
-        }
-        //console.log("src switch: " + src_switch + " - src port: " + src_port + " - dst switch: " + dst_switch + " - dst port: " + dst_port + " - status: " + links[i]["Status"])
+        // if the link is active set status to 1 otherwise set it to 0
+        links[i]["Status"] = (active_links[src_switch].includes(src_port) && active_links[dst_switch].includes(dst_port)) ? 1 : 0;
     }
 
     return links
 }
 
+// function to retrieve informations and draw the image
 function initialize_topology() {
     // Clear canvas before setting the slice image
     d3.select("svg").selectAll("*").remove();
+    // request the switches
     fetch("/v1.0/topology/switches", { method: "GET" })
         .then((response) => response.json()).then((switches) => {
-
+            // request the hosts
             fetch("/v1.0/topology/hosts", { method: "GET" })
                 .then((response) => response.json()).then((hosts) => {
-
+                    // request the links
                     fetch("/v1.0/topology/links", { method: "GET" })
                         .then((response) => response.json()).then((links) => {
-
+                            // request the active slice
                             fetch("/api/v1/activeSlice", { method: "GET" })
                                 .then((response) => response.json()).then((active_links) => {
 
                                     if (active_links["status"] == "success") {
                                         // Set status to links to replicate the slice
-                                        links = parse_active_liks(active_links["message"], links);
+                                        links = parse_active_liks(active_links["message"]["slice"], links);
                                         hosts_links = []
                                         // Sort host and switches
                                         hosts.sort((a, b) => a.mac > b.mac);
@@ -364,20 +364,13 @@ function initialize_topology() {
                                             hosts_links.push(link);
                                             hosts[i].dpid = "h" + (i + 1);
                                         }
-                                        // Set slice name
-                                        fetch("/api/v1/activeSliceName", { method: "GET" })
-                                            .then((response) => response.json()).then((res) => {
-                                                if (res["status"] == "success") {
-                                                    current_slice = res["message"];
-                                                } else {
-                                                    alert("Impossible to set slice name, please refresh the page");
-                                                }
-                                            });
+                                        current_slice = active_links["message"]["slice_name"];
+                                        document.getElementById("sliceName").innerText = current_slice;
                                         // Initialize topology and create image in canvas
                                         topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
                                         elem.update();
                                     } else {
-                                        alert("Something went wrong, please refresh the page");
+                                        alert("Something went wrong, please refresh the page and restart mininet");
                                     }
                                 });
                         });
@@ -401,10 +394,7 @@ function initialize_buttons() {
                     // Set onclick function to change slice
                     button.onclick = function () {
                         fetch("/api/v1/slice/" + button.innerText, { method: "GET" })
-                            .then((response) => response).then((res) => {
-                                current_slice = button.innerText;
-                                initialize_topology();
-                            });
+                            .then((response) => response).then((res) => { initialize_topology(); });
                     }
                     slices_div.appendChild(button);
                 }
@@ -432,6 +422,33 @@ function delete_slice(slice_to_delete) {
         });
 }
 
+function custom_switch(value) {
+    var ret = 0;
+    switch (value) {
+        case "100kb":
+            ret = 100000;
+            break;
+        case "300kb":
+            ret = 300000;
+            break;
+        case "500kb":
+            ret = 500000;
+            break;
+        case "800kb":
+            ret = 800000;
+            break;
+        case "1Mb":
+            ret = 1000000;
+            break;
+        case "5Mb":
+            ret = 5000000;
+            break;
+        default:
+            break;
+    }
+    return ret;
+}
+
 // Create a new slice and set it as selected
 function create_slice(slice_name) {
 
@@ -452,7 +469,14 @@ function create_slice(slice_name) {
                 "5": { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] },
                 "6": { "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] }
             },
-            "qos": []
+            "qos": [
+                { "sw_id": 1, "port": "s1-eth6", "match": [], "queues": [] },
+                { "sw_id": 2, "port": "s2-eth6", "match": [], "queues": [] },
+                { "sw_id": 3, "port": "s3-eth6", "match": [], "queues": [] },
+                { "sw_id": 4, "port": "s4-eth6", "match": [], "queues": [] },
+                { "sw_id": 5, "port": "s5-eth6", "match": [], "queues": [] },
+                { "sw_id": 6, "port": "s6-eth6", "match": [], "queues": [] }
+            ]
         }
     };
 
@@ -460,13 +484,34 @@ function create_slice(slice_name) {
     for (var i = 1; i < 7; i++) {
         for (var j = 1; j < 7; j++) {
             if (i != j) {
-                current_checkbox = document.getElementById("check:" + i + "-" + j);
+                let current_checkbox = document.getElementById("check:" + i + "-" + j);
                 if (current_checkbox.checked) {
                     slice["slice"]["rules"]["" + i][port_map[i + "-" + j]].push(6);
+
+                    // retrieve max and min bandwidth
+                    var minBW_elem = document.getElementById("minBW:" + i + "-" + j);
+                    var maxBW_elem = document.getElementById("maxBW:" + i + "-" + j)
+                    var minBW_text = minBW_elem.options[minBW_elem.selectedIndex].text;
+                    var maxBW_text = maxBW_elem.options[maxBW_elem.selectedIndex].text;
+
+                    if (minBW_text != "no rules" && maxBW_text != "no rules") {
+                        var minBW = custom_switch(minBW_text);
+                        var maxBW = custom_switch(maxBW_text);
+                        if (maxBW > minBW) {
+                            slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
+                            slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW), "min_rate": String(minBW) });
+                        } else {
+                            slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
+                            slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW) });
+                        }
+                    }
                 }
             }
         }
     }
+
+    // filter the array to remove queues with no rules
+    slice["slice"]["qos"] = slice["slice"]["qos"].filter(function (element) { return element["match"].length != 0; });
 
     // For each port and its array if it contains something (6) save that port in the array
     for (var i = 1; i < 7; i++) {
@@ -505,14 +550,10 @@ function create_slice(slice_name) {
             // Set onclick function to change slice
             button.onclick = function () {
                 fetch("/api/v1/slice/" + button.innerText, { method: "GET" })
-                    .then((response) => response).then((res) => {
-                        current_slice = button.innerText;
-                        initialize_topology();
-                    });
+                    .then((response) => response).then((res) => { initialize_topology(); });
             }
             // Set new current slice, save it, close the prompt and refresh the canvas
             slices_div.appendChild(button);
-            current_slice = slice_name;
             existing_slices.push(slice_name);
             document.getElementById("modal").classList.remove("open");
             initialize_topology();

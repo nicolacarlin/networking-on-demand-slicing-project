@@ -1,9 +1,0 @@
-QoS
-
-
-needed:
-    arping
-    
-ip -j addr show dev wlan0 | jq -r '.[0].addr_info | map(select(.family == "inet"))[0].local'
-
-arping -c 1 "ip" -I "port"
