@@ -444,6 +444,7 @@ function custom_switch(value) {
             ret = 5000000;
             break;
         default:
+            ret = 0;
             break;
     }
     return ret;
@@ -493,10 +494,10 @@ function create_slice(slice_name) {
                     var maxBW_elem = document.getElementById("maxBW:" + i + "-" + j)
                     var minBW_text = minBW_elem.options[minBW_elem.selectedIndex].text;
                     var maxBW_text = maxBW_elem.options[maxBW_elem.selectedIndex].text;
+                    var minBW = custom_switch(minBW_text);
+                    var maxBW = custom_switch(maxBW_text);
 
-                    if (minBW_text != "no rules" && maxBW_text != "no rules") {
-                        var minBW = custom_switch(minBW_text);
-                        var maxBW = custom_switch(maxBW_text);
+                    if (minBW != 0 && maxBW != 0) {
                         if (maxBW > minBW) {
                             slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
                             slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW), "min_rate": String(minBW) });
@@ -504,6 +505,12 @@ function create_slice(slice_name) {
                             slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
                             slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW) });
                         }
+                    } else if (minBW != 0 && maxBW == 0) {
+                        slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
+                        slice["slice"]["qos"][i - 1]["queues"].push({ "min_rate": String(minBW) });
+                    } else if (minBW == 0 && maxBW != 0) {
+                        slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
+                        slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW) });
                     }
                 }
             }
