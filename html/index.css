@@ -32,7 +32,7 @@
 }
 
 .select {
-    width: 60px;
+    width: 73px;
     height: 30px;
     margin-left: 3px;
     margin-right: 7px;
@@ -63,10 +63,10 @@
     background-color: #fff;
     border-radius: 5px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    padding: 10px;
+    padding: 5px;
     text-align: center;
-    width: 1600px;
-    height: 800px;
+    width: 1620px;
+    height: 870px;
 }
 
 .container {
@@ -82,10 +82,10 @@
     align-items: center;
     justify-content: center;
     font-size: small;
-    padding-left: 10px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-right: 15px;
+    padding-left: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-right: 10px;
     border-right: 1px solid #000000;
     margin-bottom: 20px;
 }
@@ -95,9 +95,9 @@
     align-items: center;
     justify-content: center;
     font-size: small;
-    padding-left: 10px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-left: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     padding-right: 10px;
     margin-bottom: 20px;
 }
