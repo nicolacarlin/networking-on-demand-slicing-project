@@ -39,11 +39,14 @@ class Controller(SimpleSwitch13):
 
         self.mac_to_port = {}
 
+        #Load the json file with template slices
         self.sliceConfigs = json.load(open(template_file_path))
 
         self.sliceName = "default"
+        #Setup the default slice
         self.sliceToPort = self.sliceConfigs[self.sliceName]
 
+        #Setup the switch default config for STP
         config = {
                     dpid_lib.str_to_dpid('0000000000000001'): {
                     'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},                                 
@@ -83,6 +86,7 @@ class Controller(SimpleSwitch13):
                                     match=match, instructions=inst)
         datapath.send_msg(mod)
 
+    #Default method
     def delete_flow(self, datapath):
 
         ofproto = datapath.ofproto
@@ -160,7 +164,7 @@ class Controller(SimpleSwitch13):
         else: 
             self.logger.info("Standard error")
 
-
+    #Default method
     @set_ev_cls(stplib.EventTopologyChange, MAIN_DISPATCHER)
     def _topology_change_handler(self, ev):
         dp = ev.dp
@@ -172,6 +176,7 @@ class Controller(SimpleSwitch13):
             self.delete_flow(dp)
             del self.mac_to_port[dp.id]
 
+    #Default method
     @set_ev_cls(stplib.EventPortStateChange, MAIN_DISPATCHER)
     def _port_state_change_handler(self, ev):
         dpid_str = dpid_lib.dpid_to_str(ev.dp.id)
@@ -183,24 +188,30 @@ class Controller(SimpleSwitch13):
         self.logger.debug("[dpid=%s][port=%d] state=%s",
                           dpid_str, ev.port_no, of_state[ev.port_state])
         
+    #Method to restart the stp configuration
     def restart_stp(self):
         for bridge in self.stp.bridge_list.values():            
             try:
+                #Ask to bridge switch to recalculate STP
                 bridge.recalculate_spanning_tree()
             except AttributeError:
                 pass
     
+    #Calculate the active ports
     def parse_active_ports(self):
         active_ports = {}
         for outer_key, inner_dict in self.sliceToPort["rules"].items():
             for inner_key, value_list in inner_dict.items():
                 for value in value_list:
+                    #Check if src_port is already in the array
                     if outer_key in active_ports and value not in active_ports[outer_key]:
                         active_ports[outer_key].append(value)
                     else: 
+                        #if not exists, add the src_port in the array with value dst_port
                         active_ports[outer_key] = [value]
         return active_ports
 
+    #Method to change the slice
     def _change_slice(self, slicename):
         # Remove all QoS rules
         res = requests.delete(QOS_REST_ENDPOINT+"/rules/all/all", data=json.dumps({"rule_id": "all", "qos_id": "all"}))
@@ -213,6 +224,7 @@ class Controller(SimpleSwitch13):
 
         time.sleep(1)
 
+        #Change slice
         self.sliceName = slicename
         self.sliceToPort = self.sliceConfigs[self.sliceName]
         #self.mac_to_port = {}
@@ -237,6 +249,7 @@ class Controller(SimpleSwitch13):
 
             time.sleep(1)
 
+            #Add the new QoS
             for index, match in enumerate(qos_rules["match"]): 
                 res = requests.post(QOS_REST_ENDPOINT+"/rules/"+dpid_lib.dpid_to_str(qos_rules["sw_id"]), json.dumps({
                     "match": {
@@ -251,10 +264,13 @@ class Controller(SimpleSwitch13):
 
                 time.sleep(1)
 
+        #get the active ports
         active_ports = self.parse_active_ports()
 
+        #Activate the link 
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
+                #Check if port should be activated
                 if(port.ofport.port_no in active_ports[str(int(bridge.dpid_str['dpid']))]): 
                     p = self.dpset.get_port(int(bridge.dpid_str['dpid']), port.ofport.port_no)
                     if(port.state == 0):
@@ -264,18 +280,23 @@ class Controller(SimpleSwitch13):
 
         time.sleep(3)
 
+        #Require STP restart
         stp_restart_required = True
 
+        #Deactivate the other ports
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
+                #If port is not in active port deactivate the link
                 if(port.ofport.port_no not in active_ports[str(int(bridge.dpid_str['dpid']))]): 
                     p = self.dpset.get_port(int(bridge.dpid_str['dpid']), port.ofport.port_no)
-                    if(port.state != 0):
+                    if(port.state != 0): 
                         if(port.role == 1):
+                            #if switch is ROOT, STP is not required to restart
                             stp_restart_required = False
                         self.logger.info(f"PORT DOWN: {p}")
                         bridge.link_down(p)
 
+        #if restart is required, call the appropriate method
         if(stp_restart_required):
             self.logger.info("\n\nRESTART\n\n")
             self.restart_stp()
@@ -305,6 +326,7 @@ class TopoController(ControllerBase):
         super(TopoController, self).__init__(req, link, data, **config)
         self.switch_app = data[switch_instance_name]
 
+    #API to create the slice
     @route('creation_slice', PERS_REST_ENDPOINT + "/sliceCreation", methods=['POST'])
     def creation_slice(self, req, **kwargs):
         self.switch_app.logger.info("\nReceived a request to create a new slice\n")
@@ -319,23 +341,29 @@ class TopoController(ControllerBase):
         if "name" in req and req["name"] in self.switch_app.sliceConfigs:
             return Response(status="409", content_type='application/json', text=json.dumps({"status": "error", "message":"Slice already present."}))
         else:
+            #Add the new slice
             if "slice" in req:
                 self.switch_app.sliceConfigs[req["name"]] = req["slice"]
                 self.switch_app._change_slice(req["name"])
+                #Save in the json file
                 with open(template_file_path, "w") as template_file:
                     json.dump(self.switch_app.sliceConfigs, template_file)
                 return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message":"Slice added and configured"}))
             else: 
                 return Response(status="400", content_type='application/json', text=json.dumps({"status": "error", "message":"Slice not defined."}))
 
+    #API to delete the slice
     @route('deletion_slice', PERS_REST_ENDPOINT + "/sliceDeletion/{slicename}", methods=['DELETE'])
     def deletion_slice(self, req, slicename, **kwargs):
         self.switch_app.logger.info("\nReceived a request to delete current slice\n")
+        #Impossible to delete default slice
         if slicename != "default":
             if slicename in self.switch_app.sliceConfigs:
+                #If slice is active, restore the default slice
                 if slicename == self.switch_app.sliceName:
                     self.switch_app._change_slice("default")
                 del self.switch_app.sliceConfigs[slicename]
+                #Remove the slice from the json file
                 with open(template_file_path, "w") as template_file:
                     json.dump(self.switch_app.sliceConfigs, template_file)
                 return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message":"Slice deleted"}))
@@ -344,17 +372,21 @@ class TopoController(ControllerBase):
         else:
             return Response(status="409", content_type='application/json', text=json.dumps({"status": "error", "message":"Impossible to delete default slice."}))
 
+    #API to change the slice
     @route('change_slice', PERS_REST_ENDPOINT + "/slice/{slicename}", methods=['GET'])
     def change_slice(self, req, slicename, **kwargs):
         self.switch_app.logger.info("\nReceived a request to change current slice\n")
+        #Change the slice
         self.switch_app._change_slice(slicename)
         return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message": "slice activated"}))
 
+    #API to return active slice
     @route('get_active_slice_template', PERS_REST_ENDPOINT + "/activeSlice", methods=['GET'])
     def get_active_slice_template(self, req, **kwargs):
         self.switch_app.logger.info("\nReceived a request for the current slice\n")
         return Response(status="200", content_type='application/json', text=json.dumps({"status": "success", "message": {"slice_name": self.switch_app.sliceName, "slice" : self.switch_app.parse_active_ports()}}))
 
+    #API to return the slice list
     @route('get_slices', PERS_REST_ENDPOINT + "/slices", methods=['GET'])
     def get_slices(self, req, **kwargs):
         self.switch_app.logger.info("\nReceived a request for all slices\n")
