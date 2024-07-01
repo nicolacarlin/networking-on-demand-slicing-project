@@ -203,11 +203,11 @@ class Controller(SimpleSwitch13):
         for outer_key, inner_dict in self.sliceToPort["rules"].items():
             for inner_key, value_list in inner_dict.items():
                 for value in value_list:
-                    #Check if src_port is already in the array
+                    #Check if switch (outer_key) is already in the array
                     if outer_key in active_ports and value not in active_ports[outer_key]:
                         active_ports[outer_key].append(value)
                     else: 
-                        #if not exists, add the src_port in the array with value dst_port
+                        #if not in the array, add the switch in the array with value the port
                         active_ports[outer_key] = [value]
         return active_ports
 
