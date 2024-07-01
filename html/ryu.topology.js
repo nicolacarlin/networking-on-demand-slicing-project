@@ -522,30 +522,31 @@ function create_slice(slice_name) {
                 let current_checkbox = document.getElementById("check:" + i + "-" + j);
                 if (current_checkbox.checked) {
                     slice["slice"]["rules"]["" + i][port_map[i + "-" + j]].push(6);
+                }
 
-                    // retrieve max and min bandwidth
-                    var minBW_elem = document.getElementById("minBW:" + i + "-" + j);
-                    var maxBW_elem = document.getElementById("maxBW:" + i + "-" + j)
-                    var minBW_text = minBW_elem.options[minBW_elem.selectedIndex].text;
-                    var maxBW_text = maxBW_elem.options[maxBW_elem.selectedIndex].text;
-                    var minBW = custom_switch(minBW_text);
-                    var maxBW = custom_switch(maxBW_text);
+                // retrieve max and min bandwidth
+                var minBW_elem = document.getElementById("minBW:" + i + "-" + j);
+                var maxBW_elem = document.getElementById("maxBW:" + i + "-" + j);
+                var minBW = custom_switch(minBW_elem.options[minBW_elem.selectedIndex].text);
+                var maxBW = custom_switch(maxBW_elem.options[maxBW_elem.selectedIndex].text);
 
-                    if (minBW != 0 && maxBW != 0) {
-                        if (maxBW > minBW) {
-                            slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
-                            slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW), "min_rate": String(minBW) });
-                        } else {
-                            slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
-                            slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW) });
-                        }
-                    } else if (minBW != 0 && maxBW == 0) {
+                if (minBW != 0 && maxBW != 0) {
+                    // if maxBW is greater than minBW add both, otherwise add only maxBW
+                    if (maxBW > minBW) {
                         slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
-                        slice["slice"]["qos"][i - 1]["queues"].push({ "min_rate": String(minBW) });
-                    } else if (minBW == 0 && maxBW != 0) {
+                        slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW), "min_rate": String(minBW) });
+                    } else {
                         slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
                         slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW) });
                     }
+                } else if (minBW != 0 && maxBW == 0) {
+                    // if only minBW is set add only minBW
+                    slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
+                    slice["slice"]["qos"][i - 1]["queues"].push({ "min_rate": String(minBW) });
+                } else if (minBW == 0 && maxBW != 0) {
+                    // if only maxBW is set add only maxBW
+                    slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
+                    slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW) });
                 }
             }
         }
@@ -617,3 +618,4 @@ function main() {
 }
 
 main();
+

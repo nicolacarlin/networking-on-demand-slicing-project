@@ -37,13 +37,14 @@
 
     <div id="QoS">
       <h3>QoS</h3>
-      <h5 id="qosResults">Click on a switch to check the apllied rules</h5>
+      <h5 id="qosResults">Click on a switch to check the applied rules</h5>
     </div>
   </div>
 
   <div class="modal" id="modal">
     <div class="modal-inner">
       <h3>Create your custom slice</h3>
+
       <hr>
 
       <div class="container">
@@ -54,148 +55,163 @@
           <hr>
 
           <div class="entry">
-            <h5>Switch 1 => Switch 2</h5>
+            <h5>Switch 1 &lt---&gt Switch 2</h5>
             <input id="check:1-2" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:1-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:1-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 1 => Switch 3</h5>
+            <h5>Switch 1 &lt---&gt Switch 3</h5>
             <input id="check:1-3" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:1-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:1-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 1 => Switch 4</h5>
+            <h5>Switch 1 &lt---&gt Switch 4</h5>
             <input id="check:1-4" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:1-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:1-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 1 => Switch 5</h5>
+            <h5>Switch 1 &lt---&gt Switch 5</h5>
             <input id="check:1-5" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:1-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:1-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Switch 1 &lt---&gt Switch 6</h5>
+            <input id="check:1-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+          </div>
+
+          <hr>
+
+          <h4>Host 1 QoS</h4>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 1 &lt---&gt Host 2</h5>
+            <div>
+              <select id="minBW:1-2" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:1-2" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
           <hr>
 
           <div class="entry">
-            <h5>Switch 1 => Switch 6</h5>
-            <input id="check:1-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+            <h5>Host 1 &lt---&gt Host 3</h5>
+            <div>
+              <select id="minBW:1-3" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:1-3" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
+
+          <hr>
 
           <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:1-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+            <h5>Host 1 &lt---&gt Host 4</h5>
+            <div><select id="minBW:1-4" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:1-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+              <select id="maxBW:1-4" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
+          <hr>
+
+          <div class="entry">
+            <h5>Host 1 &lt---&gt Host 5</h5>
+            <div><select id="minBW:1-5" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:1-5" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 1 &lt---&gt Host 6</h5>
+            <div><select id="minBW:1-6" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:1-6" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div class="inner-container">
@@ -204,148 +220,161 @@
           <hr>
 
           <div class="entry">
-            <h5>Switch 2 => Switch 1</h5>
+            <h5>Switch 2 &lt---&gt Switch 1</h5>
             <input id="check:2-1" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:2-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:2-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 2 => Switch 3</h5>
+            <h5>Switch 2 &lt---&gt Switch 3</h5>
             <input id="check:2-3" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:2-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:2-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 2 => Switch 4</h5>
+            <h5>Switch 2 &lt---&gt Switch 4</h5>
             <input id="check:2-4" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:2-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:2-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 2 => Switch 5</h5>
+            <h5>Switch 2 &lt---&gt Switch 5</h5>
             <input id="check:2-5" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:2-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:2-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Switch 2 &lt---&gt Switch 6</h5>
+            <input id="check:2-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+          </div>
+
+          <hr>
+
+          <h4> Host 2 QoS</h4>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 2 &lt---&gt Host 1</h5>
+            <div><select id="minBW:2-1" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:2-1" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
           <hr>
 
           <div class="entry">
-            <h5>Switch 2 => Switch 6</h5>
-            <input id="check:2-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+            <h5>Host 2 &lt---&gt Host 3</h5>
+            <div><select id="minBW:2-3" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:2-3" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
+
+          <hr>
 
           <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:2-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+            <h5>Host 2 &lt---&gt Host 4</h5>
+            <div><select id="minBW:2-4" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:2-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+              <select id="maxBW:2-4" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
+          <hr>
+
+          <div class="entry">
+            <h5>Host 2 &lt---&gt Host 5</h5>
+            <div><select id="minBW:2-5" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:2-5" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 2 &lt---&gt Host 6</h5>
+            <div><select id="minBW:2-6" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:2-6" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div class="inner-container">
@@ -354,146 +383,160 @@
           <hr>
 
           <div class="entry">
-            <h5>Switch 3 => Switch 1</h5>
+            <h5>Switch 3 &lt---&gt Switch 1</h5>
             <input id="check:3-1" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:3-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:3-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 3 => Switch 2</h5>
+            <h5>Switch 3 &lt---&gt Switch 2</h5>
             <input id="check:3-2" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:3-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:3-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 3 => Switch 4</h5>
+            <h5>Switch 3 &lt---&gt Switch 4</h5>
             <input id="check:3-4" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:3-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:3-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 3 => Switch 5</h5>
+            <h5>Switch 3 &lt---&gt Switch 5</h5>
             <input id="check:3-5" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:3-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:3-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Switch 3 &lt---&gt Switch 6</h5>
+            <input id="check:3-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+          </div>
+
+          <hr>
+
+          <h4> Host 3 QoS</h4>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 3 &lt---&gt Host 1</h5>
+            <div><select id="minBW:3-1" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:3-1" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
           <hr>
 
           <div class="entry">
-            <h5>Switch 3 => Switch 6</h5>
-            <input id="check:3-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+            <h5>Host 3 &lt---&gt Host 2</h5>
+            <div><select id="minBW:3-2" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:3-2" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:3-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:3-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Host 3 &lt---&gt Host 4</h5>
+            <div><select id="minBW:3-4" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:3-4" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 3 &lt---&gt Host 5</h5>
+            <div><select id="minBW:3-5" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:3-5" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 3 &lt---&gt Host 6</h5>
+            <div><select id="minBW:3-6" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:3-6" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
         </div>
@@ -504,146 +547,160 @@
           <hr>
 
           <div class="entry">
-            <h5>Switch 4 => Switch 1</h5>
+            <h5>Switch 4 &lt---&gt Switch 1</h5>
             <input id="check:4-1" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:4-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:4-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 4 => Switch 2</h5>
+            <h5>Switch 4 &lt---&gt Switch 2</h5>
             <input id="check:4-2" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:4-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:4-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 4 => Switch 3</h5>
+            <h5>Switch 4 &lt---&gt Switch 3</h5>
             <input id="check:4-3" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:4-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:4-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 4 => Switch 5</h5>
+            <h5>Switch 4 &lt---&gt Switch 5</h5>
             <input id="check:4-5" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:4-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:4-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Switch 4 &lt---&gt Switch 6</h5>
+            <input id="check:4-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+          </div>
+
+          <hr>
+
+          <h4> Host 4 QoS</h4>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 4 &lt---&gt Host 1</h5>
+            <div><select id="minBW:4-1" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:4-1" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
           <hr>
 
           <div class="entry">
-            <h5>Switch 4 => Switch 6</h5>
-            <input id="check:4-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+            <h5>Host 4 &lt---&gt Host 2</h5>
+            <div><select id="minBW:4-2" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:4-2" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:4-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:4-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Host 4 &lt---&gt Host 3</h5>
+            <div><select id="minBW:4-3" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:4-3" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 4 &lt---&gt Host 5</h5>
+            <div><select id="minBW:4-5" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:4-5" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 4 &lt---&gt Host 6</h5>
+            <div><select id="minBW:4-6" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:4-6" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
         </div>
@@ -654,146 +711,160 @@
           <hr>
 
           <div class="entry">
-            <h5>Switch 5 => Switch 1</h5>
+            <h5>Switch 5 &lt---&gt Switch 1</h5>
             <input id="check:5-1" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:5-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:5-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 5 => Switch 2</h5>
+            <h5>Switch 5 &lt---&gt Switch 2</h5>
             <input id="check:5-2" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:5-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:5-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 5 => Switch 3</h5>
+            <h5>Switch 5 &lt---&gt Switch 3</h5>
             <input id="check:5-3" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:5-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:5-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 5 => Switch 4</h5>
+            <h5>Switch 5 &lt---&gt Switch 4</h5>
             <input id="check:5-4" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:5-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:5-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Switch 5 &lt---&gt Switch 6</h5>
+            <input id="check:5-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+          </div>
+
+          <hr>
+
+          <h4> Host 5 QoS</h4>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 5 &lt---&gt Host 1</h5>
+            <div><select id="minBW:5-1" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:5-1" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
           <hr>
 
           <div class="entry">
-            <h5>Switch 5 => Switch 6</h5>
-            <input id="check:5-6" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+            <h5>Host 5 &lt---&gt Host 2</h5>
+            <div><select id="minBW:5-2" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:5-2" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:5-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:5-6" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Host 5 &lt---&gt Host 3</h5>
+            <div><select id="minBW:5-3" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:5-3" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 5 &lt---&gt Host 4</h5>
+            <div><select id="minBW:5-4" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:5-4" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 5 &lt---&gt Host 6</h5>
+            <div><select id="minBW:5-6" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:5-6" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
         </div>
@@ -804,146 +875,160 @@
           <hr>
 
           <div class="entry">
-            <h5>Switch 6 => Switch 1</h5>
+            <h5>Switch 6 &lt---&gt Switch 1</h5>
             <input id="check:6-1" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:6-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:6-1" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 6 => Switch 2</h5>
+            <h5>Switch 6 &lt---&gt Switch 2</h5>
             <input id="check:6-2" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:6-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:6-2" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 6 => Switch 3</h5>
+            <h5>Switch 6 &lt---&gt Switch 3</h5>
             <input id="check:6-3" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:6-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
-
-            <h5>Max BW</h5>
-            <select id="maxBW:6-3" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
-          </div>
-
           <hr>
 
           <div class="entry">
-            <h5>Switch 6 => Switch 4</h5>
+            <h5>Switch 6 &lt---&gt Switch 4</h5>
             <input id="check:6-4" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:6-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:6-4" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Switch 6 &lt---&gt Switch 5</h5>
+            <input id="check:6-5" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+          </div>
+
+          <hr>
+
+          <h4> Host 6 QoS</h4>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 6 &lt---&gt Host 1</h5>
+            <div><select id="minBW:6-1" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:6-1" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
           <hr>
 
           <div class="entry">
-            <h5>Switch 6 => Switch 5</h5>
-            <input id="check:6-5" type="checkbox" class="checkbox" onchange="setUnsetCheckboxes(this)" />
+            <h5>Host 6 &lt---&gt Host 2</h5>
+            <div><select id="minBW:6-2" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:6-2" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
 
-          <div class="entry">
-            <h5>Min BW</h5>
-            <select id="minBW:6-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>100kb</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-            </select>
+          <hr>
 
-            <h5>Max BW</h5>
-            <select id="maxBW:6-5" class="select" onchange="changeSelects(this)">
-              <option>no rules</option>
-              <option>300kb</option>
-              <option>500kb</option>
-              <option>800kb</option>
-              <option>1Mb</option>
-              <option>5Mb</option>
-            </select>
+          <div class="entry">
+            <h5>Host 6 &lt---&gt Host 3</h5>
+            <div><select id="minBW:6-3" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:6-3" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 6 &lt---&gt Host 4</h5>
+            <div><select id="minBW:6-4" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:6-4" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="entry">
+            <h5>Host 6 &lt---&gt Host 5</h5>
+            <div><select id="minBW:6-5" class="select-top" onchange="changeSelects(this)">
+                <option>Min BW</option>
+                <option>100kb</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+              </select>
+
+              <select id="maxBW:6-5" class="select" onchange="changeSelects(this)">
+                <option>Max BW</option>
+                <option>300kb</option>
+                <option>500kb</option>
+                <option>800kb</option>
+                <option>1Mb</option>
+                <option>5Mb</option>
+              </select>
+            </div>
           </div>
         </div>
 
