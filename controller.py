@@ -49,17 +49,17 @@ class Controller(SimpleSwitch13):
         #Setup the switch default config for STP
         config = {
                     dpid_lib.str_to_dpid('0000000000000001'): {
-                    'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},                                 
+                    'bridge': {'priority': 0x8000, 'max_age':60, 'fwd_delay': 2}},                                 
                     dpid_lib.str_to_dpid('0000000000000002'):
-                    {'bridge': {'priority': 0x8000,'max_age':90, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000,'max_age':60, 'fwd_delay': 2}},
                     dpid_lib.str_to_dpid('0000000000000003'):
-                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000, 'max_age':60, 'fwd_delay': 2}},
                     dpid_lib.str_to_dpid('0000000000000004'):
-                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000, 'max_age':60, 'fwd_delay': 2}},
                     dpid_lib.str_to_dpid('0000000000000005'):
-                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}},
+                    {'bridge': {'priority': 0x8000, 'max_age':60, 'fwd_delay': 2}},
                     dpid_lib.str_to_dpid('0000000000000006'):
-                    {'bridge': {'priority': 0x8000, 'max_age':90, 'fwd_delay': 3}}}
+                    {'bridge': {'priority': 0x8000, 'max_age':60, 'fwd_delay': 2}}}
 
 
         # Register the STP configuration
@@ -133,7 +133,7 @@ class Controller(SimpleSwitch13):
             else:
                 # Flood the packet to all possible ports (based on the slice restrictions)
                 out_port = self.sliceToPort["rules"][str(dpid)][str(in_port)]
-                self.logger.info("Destination unknown [%s]: switch: %s, flooding on ports: %s", dst, dpid, out_port)
+                #self.logger.info("Destination unknown [%s]: switch: %s, flooding on ports: %s", dst, dpid, out_port)
 
             # Create the actions list: send the packet to each port in out_port
             actions = [parser.OFPActionOutput(int(out)) for out in out_port]

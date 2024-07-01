@@ -572,6 +572,12 @@ function create_slice(slice_name) {
         }
     }
 
+    for (var i = 1; i < 7; i++) {
+        for (var k = 1; k < 7; k++) {
+            slice["slice"]["rules"]["" + i]["" + k].sort();
+        }
+    }
+
     console.log(slice);
 
     // Call to create the slice
