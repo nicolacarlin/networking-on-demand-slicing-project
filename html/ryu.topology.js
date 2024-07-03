@@ -92,10 +92,11 @@ function _tick() {
 elem.drag = elem.force.drag().on("dragstart", _dragstart);
 function _dragstart(d) {
     var output = "";
+    document.getElementById("qosResults").innerHTML = output;
     fetch("/qos/rules/" + d.dpid, { method: "GET" })
         .then((response) => response.json()).then((rules) => {
             var rules = rules[0]["command_result"][0]["qos"];
-
+            
             fetch("/qos/queue/" + d.dpid, { method: "GET" })
                 .then((response) => response.json()).then((queues) => {
                     for (var i = 0; i < rules.length; i++) {
