@@ -55,6 +55,8 @@ if __name__ == "__main__":
     net.addController(controller)
     net.build()
 
+    controller.cmd("sudo ovs-vsctl set-manager ptcp:6632")
+
     #Disable IPv6
     for h in net.hosts:
         h.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
