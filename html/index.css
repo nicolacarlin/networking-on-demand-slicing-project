@@ -118,3 +118,12 @@
 .checkbox {
     margin-left: 20px;
 }
+
+textarea {
+    overflow-y: scroll;
+    resize: none;
+    width: 500px;
+    height: 100px;
+    border-style: none;
+    border-color: transparent;
+}

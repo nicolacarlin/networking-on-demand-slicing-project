@@ -104,7 +104,7 @@ function _dragstart(d) {
                             var dst = rules[i]["nw_dst"];
                             var actions = rules[i]["actions"];
 
-                            output += "From h" + src.split(".")[3] + " to h" + dst.split(".")[3] + "\n";
+                            output += "From h" + src.split(".")[3] + " to h" + dst.split(".")[3] + ": ";
 
                             for (var j = 0; j < actions.length; j++) {
                                 if ("queue" in actions[j]) {
@@ -112,17 +112,17 @@ function _dragstart(d) {
 
                                     var config = queues[0]["command_result"]["details"]["s" + dpid_to_int(d.dpid) + "-eth6"][action]["config"];
                                     if ("max-rate" in config) {
-                                        output += "Max rate: " + config["max-rate"] + "\n";
+                                        output += "\tMax rate: " + config["max-rate"];
                                     }
                                     if ("min-rate" in config) {
-                                        output += "Min rate: " + config["min-rate"] + "\n";
+                                        output += "\tMin rate: " + config["min-rate"];
                                     }
-
+                                    output += "\n";
                                 }
                             }
                         }
                     }
-                    document.getElementById("qosResults").innerText = output;
+                    document.getElementById("qosResults").innerHTML = output;
                 });
         });
     // d3.json("/stats/flow/" + dpid, function (e, data) {
