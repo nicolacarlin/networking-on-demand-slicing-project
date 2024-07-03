@@ -222,7 +222,7 @@ class Controller(SimpleSwitch13):
             res = requests.delete(QOS_REST_ENDPOINT+"/queue/"+dpid_lib.dpid_to_str(qos_rules["sw_id"]))
             self.logger.info(res)
 
-        time.sleep(1)
+        time.sleep(0.5)
 
         #Change slice
         self.sliceName = slicename
@@ -236,7 +236,7 @@ class Controller(SimpleSwitch13):
             res = requests.put(url, data=f"{OVSDB_ADDR}")
             self.logger.info(res)
 
-            time.sleep(1)
+            time.sleep(0.5)
 
             # REF: https://www.openvswitch.org/support/dist-docs/ovs-vswitchd.conf.db.5.html
             res = requests.post(QOS_REST_ENDPOINT+"/queue/"+dpid_lib.dpid_to_str(qos_rules["sw_id"]), json.dumps({
@@ -247,7 +247,7 @@ class Controller(SimpleSwitch13):
             }))
             self.logger.info(res)
 
-            time.sleep(1)
+            time.sleep(0.5)
 
             #Add the new QoS
             for index, match in enumerate(qos_rules["match"]): 
@@ -262,7 +262,7 @@ class Controller(SimpleSwitch13):
                 }))
                 self.logger.info(res)
 
-                time.sleep(1)
+                time.sleep(0.5)
 
         #get the active ports
         active_ports = self.parse_active_ports()
@@ -278,7 +278,7 @@ class Controller(SimpleSwitch13):
                         bridge.link_up(p)
                     
 
-        time.sleep(3)
+        time.sleep(2)
 
         #Require STP restart
         stp_restart_required = True
