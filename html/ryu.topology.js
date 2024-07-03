@@ -349,7 +349,8 @@ function parse_active_liks(active_links, links) {
         var dst_port = parseInt(links[i]["dst"]["port_no"]);
 
         // if the link is active set status to 1 otherwise set it to 0
-        links[i]["Status"] = (active_links[src_switch].includes(src_port) && active_links[dst_switch].includes(dst_port)) ? 1 : 0;
+        links[i]["Status"] = (active_links[src_switch] != undefined && active_links[dst_switch] != undefined)
+            && ((active_links[src_switch].includes(src_port) && active_links[dst_switch].includes(dst_port))) ? 1 : 0;
     }
 
     return links
@@ -381,22 +382,24 @@ function initialize_topology() {
                                         switches.sort((a, b) => a.dpid > b.dpid);
                                         // Add host links
                                         for (var i = 0; i < hosts.length; i++) {
-                                            let link = {
-                                                src: {
-                                                    dpid: "h" + (i + 1),
-                                                    hw_addr: hosts[i].mac,
-                                                    name: "h" + (i + 1) + "-s" + (i + 1),
-                                                    port_no: "00000001"
-                                                },
-                                                dst: {
-                                                    dpid: switches[i].dpid,
-                                                    hw_addr: switches[i].ports[0].hw_addr,
-                                                    name: switches[i].ports[0].name,
-                                                    port_no: switches[i].ports[0].port_no
+                                            if (switches[i] != undefined && hosts[i] != undefined) {
+                                                let link = {
+                                                    src: {
+                                                        dpid: "h" + (i + 1),
+                                                        hw_addr: hosts[i].mac,
+                                                        name: "h" + (i + 1) + "-s" + (i + 1),
+                                                        port_no: "00000001"
+                                                    },
+                                                    dst: {
+                                                        dpid: switches[i].dpid,
+                                                        hw_addr: switches[i].ports[0].hw_addr,
+                                                        name: switches[i].ports[0].name,
+                                                        port_no: switches[i].ports[0].port_no
+                                                    }
                                                 }
+                                                hosts_links.push(link);
+                                                hosts[i].dpid = "h" + (i + 1);
                                             }
-                                            hosts_links.push(link);
-                                            hosts[i].dpid = "h" + (i + 1);
                                         }
                                         current_slice = active_links["message"]["slice_name"];
                                         document.getElementById("sliceName").innerText = "Current slice: " + current_slice;
@@ -618,4 +621,3 @@ function main() {
 }
 
 main();
-

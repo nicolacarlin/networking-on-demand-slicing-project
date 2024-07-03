@@ -271,7 +271,7 @@ class Controller(SimpleSwitch13):
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
                 #Check if port should be activated
-                if(port.ofport.port_no in active_ports[str(int(bridge.dpid_str['dpid']))]): 
+                if ( (str(int(bridge.dpid_str['dpid'])) in active_ports) and (port.ofport.port_no in active_ports[str(int(bridge.dpid_str['dpid']))]) ): 
                     p = self.dpset.get_port(int(bridge.dpid_str['dpid']), port.ofport.port_no)
                     if(port.state == 0):
                         self.logger.info(f"PORT UP: {p}")
@@ -287,7 +287,7 @@ class Controller(SimpleSwitch13):
         for bridge in self.stp.bridge_list.values():
             for port in bridge.ports.values():
                 #If port is not in active port deactivate the link
-                if(port.ofport.port_no not in active_ports[str(int(bridge.dpid_str['dpid']))]): 
+                if( (str(int(bridge.dpid_str['dpid'])) in active_ports ) and ( port.ofport.port_no not in active_ports[str(int(bridge.dpid_str['dpid']))]) ): 
                     p = self.dpset.get_port(int(bridge.dpid_str['dpid']), port.ofport.port_no)
                     if(port.state != 0): 
                         if(port.role == 1):
