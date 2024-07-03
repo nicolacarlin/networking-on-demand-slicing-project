@@ -114,9 +114,9 @@ function _dragstart(d) {
 
                             for (var j = 0; j < actions.length; j++) {
                                 if ("queue" in actions[j]) {
-                                    var action = String(Number(actions[j]["queue"]) - 1);
+                                    var queue = actions[j]["queue"];
 
-                                    var config = queues[0]["command_result"]["details"]["s" + dpid_to_int(d.dpid) + "-eth6"][action]["config"];
+                                    var config = queues[0]["command_result"]["details"]["s" + dpid_to_int(d.dpid) + "-eth6"][queue]["config"];
                                     if ("max-rate" in config) {
                                         output += "\tMax rate: " + config["max-rate"];
                                     }
