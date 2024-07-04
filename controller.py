@@ -149,6 +149,7 @@ class Controller(SimpleSwitch13):
                     return
                 else:
                     self.add_flow(datapath, 1, match, actions)
+                    self.logger.debug("Flow added")
 
             data = None
             if msg.buffer_id == ofproto.OFP_NO_BUFFER:

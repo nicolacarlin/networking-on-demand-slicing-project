@@ -51,11 +51,11 @@ if __name__ == "__main__":
         autoSetMacs=True,
         autoStaticArp=True
     )
-    controller = RemoteController("c1", ip="127.0.0.1", port=6633)
+    controller = RemoteController("c1", ip="127.0.0.1", port=6633, protocols="OpenFlow13")
     net.addController(controller)
     net.build()
 
-    controller.cmd("sudo ovs-vsctl set-manager ptcp:6632")
+    controller.cmd("ovs-vsctl set-manager ptcp:6632")
 
     #Disable IPv6
     for h in net.hosts:
@@ -67,6 +67,7 @@ if __name__ == "__main__":
         s.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
         s.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
         s.cmd("sysctl -w net.ipv6.conf.lo.disable_ipv6=1")
+        controller.cmd(f"ovs-vsctl set Bridge {s} protocols=OpenFlow13")
 
     net.start()
 
