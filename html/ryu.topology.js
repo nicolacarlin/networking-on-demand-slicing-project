@@ -93,16 +93,18 @@ elem.drag = elem.force.drag().on("dragstart", _dragstart);
 function _dragstart(d) {
     var output = "";
     document.getElementById("qosResults").innerHTML = output;
-    fetch("/qos/rules/" + d.dpid, { method: "GET" })
-        .then((response) => response.json()).then((rules) => {
-            var rules = rules[0]["command_result"][0]["qos"];
-            
-            fetch("/qos/queue/" + d.dpid, { method: "GET" })
-                .then((response) => response.json()).then((queues) => {
-                    // Print default queue idx=0
-                    default_rate = queues[0]["command_result"]["details"]["s" + dpid_to_int(d.dpid) + "-eth6"][0]["config"]["max-rate"];
-                    output += "Default queue - Max rate: " + default_rate;
-                    output += "\n";
+    fetch("/qos/queue/" + d.dpid, { method: "GET" })
+        .then((response) => response.json()).then((queues) => {
+            // Print default queue idx=0
+            default_rate = queues[0]["command_result"]["details"]["s" + dpid_to_int(d.dpid) + "-eth6"][0]["config"]["max-rate"];
+            if (default_rate !== undefined) {
+                output += "Default queue - Max rate: " + default_rate;
+                output += "\n";
+            }
+            fetch("/qos/rules/" + d.dpid, { method: "GET" })
+                .then((response) => response.json())
+                .then((rules) => {
+                    var rules = rules[0]["command_result"][0]["qos"];
                     // Print queues related to rules
                     for (var i = 0; i < rules.length; i++) {
                         if ("nw_src" in rules[i]) {
@@ -128,8 +130,8 @@ function _dragstart(d) {
                             }
                         }
                     }
-                    document.getElementById("qosResults").innerHTML = output;
-                });
+                })
+                .finally(() => document.getElementById("qosResults").innerHTML = output);
         });
     // d3.json("/stats/flow/" + dpid, function (e, data) {
     //     flows = data[dpid];
@@ -565,7 +567,7 @@ function create_slice(slice_name) {
     }
 
     // filter the array to remove queues with no rules
-    slice["slice"]["qos"] = slice["slice"]["qos"].filter(function (element) { return element["match"].length != 0; });
+    //slice["slice"]["qos"] = slice["slice"]["qos"].filter(function (element) { return element["match"].length != 0; });
 
     // For each port and its array if it contains something (6) save that port in the array
     for (var i = 1; i < 7; i++) {
