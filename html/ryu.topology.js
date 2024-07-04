@@ -547,19 +547,19 @@ function create_slice(slice_name) {
                 if (minBW != 0 && maxBW != 0) {
                     // if maxBW is greater than minBW add both, otherwise add only maxBW
                     if (maxBW > minBW) {
-                        slice["slice"]["qos"][i - 1]["match"].push({ "src": "10.0.0." + i, "dst": "10.0.0." + j });
+                        slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
                         slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW), "min_rate": String(minBW) });
                     } else {
-                        slice["slice"]["qos"][i - 1]["match"].push({ "src": "10.0.0." + i, "dst": "10.0.0." + j });
+                        slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
                         slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW) });
                     }
                 } else if (minBW != 0 && maxBW == 0) {
                     // if only minBW is set add only minBW
-                    slice["slice"]["qos"][i - 1]["match"].push({ "src": "10.0.0." + i, "dst": "10.0.0." + j });
+                    slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
                     slice["slice"]["qos"][i - 1]["queues"].push({ "min_rate": String(minBW) });
                 } else if (minBW == 0 && maxBW != 0) {
                     // if only maxBW is set add only maxBW
-                    slice["slice"]["qos"][i - 1]["match"].push({ "src": "10.0.0." + i, "dst": "10.0.0." + j });
+                    slice["slice"]["qos"][i - 1]["match"].push({ "dst": "10.0.0." + i, "src": "10.0.0." + j });
                     slice["slice"]["qos"][i - 1]["queues"].push({ "max_rate": String(maxBW) });
                 }
             }
