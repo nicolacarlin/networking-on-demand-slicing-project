@@ -67,7 +67,6 @@ if __name__ == "__main__":
         s.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
         s.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
         s.cmd("sysctl -w net.ipv6.conf.lo.disable_ipv6=1")
-        controller.cmd(f"ovs-vsctl set Bridge {s} protocols=OpenFlow13")
 
     net.start()
 
@@ -76,6 +75,11 @@ if __name__ == "__main__":
         h.cmd(f"arping -U -I {h.name}-eth0 $(hostname -I) > /dev/null 2>&1 &")
         h.cmd(f"tcpdump -c 1 'arp' and not host $(hostname -I) > /dev/null 2>&1 && sleep 1 && pkill --nslist net --ns $$ arping > /dev/null 2>&1 &")
         time.sleep(0.1)
+
+    # Problems with STP
+    # for s in net.switches:
+    #     controller.cmd(f"ovs-vsctl set Bridge {s.name} protocols=OpenFlow13")
+    #     time.sleep(0.1)
 
     CLI(net)
     net.stop()
