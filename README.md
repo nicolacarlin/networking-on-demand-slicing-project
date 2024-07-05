@@ -25,7 +25,6 @@ cd networking-on-demand-slicing-project
 Open up two terminals and run:
 
 ```
-sudo ovs-vsctl set-manager ptcp:6632
 ryu run --observe-links gui_topology.py
 ```
 on the first terminal.
@@ -37,6 +36,29 @@ sudo python3 topology.py
 on the second one.
 
 The project should be correctly running.
+
+To test the communication between hosts (on the mininet terminal):
+```
+pingall
+```
+
+To test QoS rules application (on the mininet terminal):
+```
+xterm hX
+xterm hY
+```
+
+On the terminal for hX:
+```
+iperf -s -u -i 1 -p 500X
+```
+
+On the terminal for hY:
+```
+iperf -c 10.0.0.X -p 500X -u -b BW
+```
+
+Switch commands if you wish to test the connectivity from Y to X instead.
 
 ## Topology viewer
 
