@@ -413,6 +413,7 @@ function initialize_topology() {
                                         document.getElementById("sliceName").innerText = "Current slice: " + current_slice;
                                         // Initialize topology and create image in canvas
                                         topo.initialize({ switches: switches, links: links, hosts: hosts, hosts_links: hosts_links });
+                                        document.getElementById("qosResults").innerHTML = "Click on a switch to check the applied rules";
                                         elem.update();
                                     } else {
                                         alert("Something went wrong, please refresh the page and restart mininet");
