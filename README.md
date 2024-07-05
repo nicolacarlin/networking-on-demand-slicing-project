@@ -50,12 +50,12 @@ xterm hY
 
 On the terminal for hX:
 ```
-iperf -s -u -i 1 -p 500X
+iperf -s -i 1 -p 500X
 ```
 
 On the terminal for hY:
 ```
-iperf -c 10.0.0.X -p 500X -u -b BW
+iperf -c 10.0.0.X -p 500X -b BW (100K -> 100Kb/sec, 1M -> 1Mb/sec, ...)
 ```
 
 Switch commands if you wish to test the connectivity from Y to X instead.
