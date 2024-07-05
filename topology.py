@@ -76,10 +76,5 @@ if __name__ == "__main__":
         h.cmd(f"tcpdump -c 1 'arp' and not host $(hostname -I) > /dev/null 2>&1 && sleep 1 && pkill --nslist net --ns $$ arping > /dev/null 2>&1 &")
         time.sleep(0.1)
 
-    # Problems with STP
-    # for s in net.switches:
-    #     controller.cmd(f"ovs-vsctl set Bridge {s.name} protocols=OpenFlow13")
-    #     time.sleep(0.1)
-
     CLI(net)
     net.stop()
