@@ -4,13 +4,18 @@ This repository contains the project for the Softwarized and Virtualized Mobile 
 
 ## Install
 
-Before installing this project install the required packages:
+> [!NOTE]  
+> This project is build upon https://github.com/stevelorenz/comnetsemu.
+> To have directly all the dependecy satisfied init the VM using the provided Vagranfile, otherwise install arping and expose the post 8080, to have local access to the dashboard from the host.
+
+
+Before run this project install the required packages:
 
 ```
 sudo apt install arping
 ```
 
-To install this project clone the repository:
+To download this project clone the repository:
 
 ```
 git clone https://github.com/nicolacarlin/networking-on-demand-slicing-project.git
@@ -55,7 +60,7 @@ iperf -s -i 1 -p 500X
 
 On the terminal for hY:
 ```
-iperf -c 10.0.0.X -p 500X -b BW (100K -> 100Kb/sec, 1M -> 1Mb/sec, ...)
+iperf -c 10.0.0.X -p 500X -b <BW>  #(100K -> 100Kb/sec, 1M -> 1Mb/sec, ...)
 ```
 
 Switch commands if you wish to test the connectivity from Y to X instead.
