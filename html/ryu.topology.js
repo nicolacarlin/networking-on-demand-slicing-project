@@ -98,7 +98,9 @@ function _dragstart(d) {
             // Print default queue idx=0
             default_rate = queues[0]["command_result"]["details"]["s" + dpid_to_int(d.dpid) + "-eth6"][0]["config"]["max-rate"];
             if (default_rate !== undefined) {
-                output += "Default queue - Max rate: " + default_rate;
+                output += "Default bandwidth: 10Mb";
+                output += "\n";
+                output += "Default queue:\tMax rate: " + default_rate;
                 output += "\n";
             }
             fetch("/qos/rules/" + d.dpid, { method: "GET" })
@@ -535,7 +537,7 @@ function create_slice(slice_name) {
                 if (current_checkbox.checked) {
                     slice["slice"]["rules"]["" + i][port_map[i + "-" + j]].push(6);
                     // Add default rule idx=0
-                    slice["slice"]["qos"][i - 1]["queues"][0] = { "max_rate": "100000000" }; //100Mb
+                    slice["slice"]["qos"][i - 1]["queues"][0] = { "max_rate": "8000000" }; //8Mb
                 }
 
                 // retrieve max and min bandwidth

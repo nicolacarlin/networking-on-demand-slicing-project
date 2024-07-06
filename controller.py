@@ -21,6 +21,7 @@ BASE_REST_ENDPOINT = 'http://localhost:8080'
 QOS_REST_ENDPOINT = BASE_REST_ENDPOINT+'/qos'
 CONFSW_REST_ENDPOINT = BASE_REST_ENDPOINT+'/v1.0/conf/switches/'
 OVSDB_ADDR = '\"tcp:127.0.0.1:6632\"'
+MAX_BAND =  '10000000' # 10Mb
 
 class Controller(SimpleSwitch13):
 
@@ -243,6 +244,7 @@ class Controller(SimpleSwitch13):
             res = requests.post(QOS_REST_ENDPOINT+"/queue/"+dpid_lib.dpid_to_str(qos_rules["sw_id"]), json.dumps({
                 "port_name": qos_rules["port"],
                 "type": "linux-htb", # default type
+                "max_rate": MAX_BAND, # Limit of each link (like TCLink property)
                 "queues": qos_rules["queues"] # max_rate and min_rate already specified
                 # idx = 0 is the default one of the port specified
             }))

@@ -13,11 +13,6 @@ class NetworkPhysicalTopo(Topo):
     def __init__(self):
         # Initialize topology
         Topo.__init__(self)
-
-        # Create template host, switch, and link
-        host_config = dict(inNamespace=True)
-        switch_link_config = dict(bw=10)
-        host_link_config = dict(bw=1)
         
         switches = []
         hosts = []
@@ -30,16 +25,16 @@ class NetworkPhysicalTopo(Topo):
             
         # Create host nodes
         for i in range(1,7):
-            hosts.append(self.addHost("h%d" % (i), **host_config))
+            hosts.append(self.addHost("h%d" % (i), inNamespace=True))
 
         # Add switch links
         for i in range(0, len(switches)):
             for j in range(i+1, len(switches)):
-              self.addLink(switches[i], switches[j], **switch_link_config)       
+              self.addLink(switches[i], switches[j])       
 
         # Add host links
         for i in range(0, len(hosts)):
-            self.addLink(hosts[i], switches[i], **host_link_config)
+            self.addLink(hosts[i], switches[i])
        
 
 if __name__ == "__main__":
