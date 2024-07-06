@@ -537,7 +537,7 @@ function create_slice(slice_name) {
                 if (current_checkbox.checked) {
                     slice["slice"]["rules"]["" + i][port_map[i + "-" + j]].push(6);
                     // Add default rule idx=0
-                    slice["slice"]["qos"][i - 1]["queues"][0] = { "max_rate": "8000000" }; //8Mb
+                    slice["slice"]["qos"][i - 1]["queues"][0] = { "max_rate": "7000000" }; //7Mb
                 }
 
                 // retrieve max and min bandwidth
